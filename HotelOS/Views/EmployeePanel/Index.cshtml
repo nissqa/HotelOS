@@ -1,0 +1,1357 @@
+﻿@model List<HotelOS.Models.Employee>
+
+@{
+    ViewData["Title"] = "Personeller";
+
+    var activeEmployees = Model
+        .Where(e => e.Status == "Aktif" || e.Status == "Active")
+        .OrderBy(e => e.FirstName)
+        .ToList();
+
+    var leaveEmployees = Model
+        .Where(e => e.Status == "İzinli" || e.Status == "Leave")
+        .OrderBy(e => e.LeaveEndDate)
+        .ToList();
+
+    var terminatedEmployees = Model
+        .Where(e => e.Status == "İşten Ayrıldı" || e.Status == "Terminated")
+        .OrderByDescending(e => e.TerminationDate)
+        .ToList();
+}
+
+<div class="employees-page">
+
+    <div class="page-header">
+        <div>
+            <h1>👨‍💼 Personeller</h1>
+            <p>Otel çalışanlarını ve görev durumlarını yönetin.</p>
+        </div>
+    </div>
+
+  
+
+    <div class="stats">
+
+        <button type="button"
+                class="stat-card stat-all"
+                onclick="showEmployeeGroup('all')">
+            <div class="stat-icon">👥</div>
+            <div>
+                <span>Toplam Personel</span>
+                <strong>@Model.Count</strong>
+            </div>
+        </button>
+
+        <button type="button"
+                class="stat-card stat-active"
+                onclick="showEmployeeGroup('active')">
+            <div class="stat-icon green">🟢</div>
+            <div>
+                <span>Aktif</span>
+                <strong>@activeEmployees.Count</strong>
+            </div>
+        </button>
+
+        <button type="button"
+                class="stat-card stat-leave"
+                onclick="showEmployeeGroup('leave')">
+            <div class="stat-icon yellow">🏖️</div>
+            <div>
+                <span>İzinli</span>
+                <strong>@leaveEmployees.Count</strong>
+            </div>
+        </button>
+
+        <button type="button"
+                class="stat-card stat-terminated"
+                onclick="showEmployeeGroup('terminated')">
+            <div class="stat-icon red">🔴</div>
+            <div>
+                <span>İşten Ayrılan</span>
+                <strong>@terminatedEmployees.Count</strong>
+            </div>
+        </button>
+
+    </div>
+
+  
+
+    <div class="filter-bar">
+
+        <div class="filter-title">
+            <span id="currentFilterIcon">👥</span>
+            <strong id="currentFilterText">Tüm Personeller</strong>
+        </div>
+
+        <button type="button"
+                class="show-all-btn"
+                onclick="showEmployeeGroup('all')">
+            ↺ Tümünü Göster
+        </button>
+
+    </div>
+
+  
+
+    <div class="employees-card">
+
+        <div class="list-header">
+
+            <div>
+                <h2>Personel Listesi</h2>
+                <p id="listDescription">
+                    Aktif çalışanlar üstte, izinliler ortada, ayrılanlar en altta gösterilir.
+                </p>
+            </div>
+
+            <div class="search-box">
+                🔍
+                <input type="text"
+                       id="employeeSearch"
+                       placeholder="Personel ara..." />
+            </div>
+
+        </div>
+
+        <div class="employee-list">
+
+         
+
+            <div class="employee-group" id="activeSection">
+
+                @if (activeEmployees.Any())
+                {
+                    <div class="section-title active-title">
+                        <span>🟢 AKTİF ÇALIŞANLAR</span>
+                        <span>@activeEmployees.Count kişi</span>
+                    </div>
+
+                    foreach (var employee in activeEmployees)
+                    {
+                        <div class="employee-item active-item"
+                             data-group="active">
+
+                            <div class="employee-avatar">
+
+                                @(string.IsNullOrEmpty(employee.FirstName)
+                                                        ? "?"
+                                                        : employee.FirstName.Substring(0, 1))
+
+                                @(string.IsNullOrEmpty(employee.LastName)
+                                                        ? ""
+                                                        : employee.LastName.Substring(0, 1))
+
+                    </div>
+
+                            <div class="employee-info">
+
+                                <strong>
+                                    @employee.FirstName @employee.LastName
+                                </strong>
+
+                                <span>
+                                    @(employee.Position ?? "Pozisyon belirtilmemiş")
+                                </span>
+
+                                <small>
+                                    📅 İşe giriş:
+                                    @employee.HireDate.ToString("dd.MM.yyyy")
+                                </small>
+
+                            </div>
+
+                            <div class="employee-status">
+                                <span class="status active">
+                                    ● Aktif
+                                </span>
+                            </div>
+
+                            <div class="employee-actions">
+
+                                <a href="@Url.Action("Details", "EmployeePanel", new { id = employee.Id })"
+                                   class="action-btn detail-btn">
+                                    👁 Detay
+                                </a>
+
+                                <button type="button"
+                                        class="action-btn leave-btn"
+                                        onclick="openLeaveModal(
+                                                    @employee.Id,
+                                                    '@Html.Raw(employee.FirstName + " " + employee.LastName)'
+                                                )">
+                                    🏖️ İzin Ver
+                                </button>
+
+                                <button type="button"
+                                        class="action-btn terminate-btn"
+                                        onclick="openTerminateModal(
+                                                    @employee.Id,
+                                                    '@Html.Raw(employee.FirstName + " " + employee.LastName)'
+                                                )">
+                                    🔴 İşten Çıkar
+                                </button>
+
+                            </div>
+
+                        </div>
+                                }
+                }
+                else
+                {
+                    <div class="group-empty">
+                        Aktif personel bulunmuyor.
+                    </div>
+                }
+
+            </div>
+
+
+            <!-- İZİNLİ -->
+
+            <div class="employee-group" id="leaveSection">
+
+                @if (leaveEmployees.Any())
+                {
+                    <div class="section-title leave-title">
+                        <span>🏖️ İZİNLİ PERSONELLER</span>
+                        <span>@leaveEmployees.Count kişi</span>
+                    </div>
+
+                    foreach (var employee in leaveEmployees)
+                    {
+                        <div class="employee-item leave-item"
+                             data-group="leave">
+
+                            <div class="employee-avatar leave-avatar">
+
+                                @(string.IsNullOrEmpty(employee.FirstName)
+                                                        ? "?"
+                                                        : employee.FirstName.Substring(0, 1))
+
+                                @(string.IsNullOrEmpty(employee.LastName)
+                                                        ? ""
+                                                        : employee.LastName.Substring(0, 1))
+
+                    </div>
+
+                            <div class="employee-info">
+
+                                <strong>
+                                    @employee.FirstName @employee.LastName
+                                </strong>
+
+                                <span>
+                                    @(employee.Position ?? "Pozisyon belirtilmemiş")
+                                </span>
+
+                                <small>
+                                    🏖️ @(employee.LeaveType ?? "İzin")
+                                    |
+                                    @employee.LeaveStartDate?.ToString("dd.MM.yyyy")
+                                    -
+                                    @employee.LeaveEndDate?.ToString("dd.MM.yyyy")
+                                </small>
+
+                            </div>
+
+                            <div class="employee-status">
+                                <span class="status leave">
+                                    ● İzinli
+                                </span>
+                            </div>
+
+                            <div class="employee-actions">
+
+                                <a href="@Url.Action("Details", "EmployeePanel", new { id = employee.Id })"
+                                   class="action-btn detail-btn">
+                                    👁 Detay
+                                </a>
+
+                                <form action="@Url.Action("EndLeave", "EmployeePanel")"
+                                      method="post">
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@employee.Id" />
+
+                                    <button type="submit"
+                                            class="action-btn active-btn">
+                                        🟢 İzni Bitir
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+                                }
+                }
+                else
+                {
+                    <div class="group-empty">
+                        İzinli personel bulunmuyor.
+                    </div>
+                }
+
+            </div>
+
+
+
+            <div class="employee-group" id="terminatedSection">
+
+                @if (terminatedEmployees.Any())
+                {
+                    <div class="section-title terminated-title">
+                        <span>🔴 İŞTEN AYRILAN PERSONELLER</span>
+                        <span>@terminatedEmployees.Count kişi</span>
+                    </div>
+
+                    foreach (var employee in terminatedEmployees)
+                    {
+                        <div class="employee-item terminated-item"
+                             data-group="terminated">
+
+                            <div class="employee-avatar terminated-avatar">
+
+                                @(string.IsNullOrEmpty(employee.FirstName)
+                                                        ? "?"
+                                                        : employee.FirstName.Substring(0, 1))
+
+                                @(string.IsNullOrEmpty(employee.LastName)
+                                                        ? ""
+                                                        : employee.LastName.Substring(0, 1))
+
+                    </div>
+
+                            <div class="employee-info">
+
+                                <strong>
+                                    @employee.FirstName @employee.LastName
+                                </strong>
+
+                                <span>
+                                    @(employee.Position ?? "Pozisyon belirtilmemiş")
+                                </span>
+
+                                <small>
+                                    🔴 Ayrılma tarihi:
+                                    @employee.TerminationDate?.ToString("dd.MM.yyyy")
+
+                            @if (!string.IsNullOrWhiteSpace(employee.TerminationReason))
+                                    {
+                                        <span>
+                                            | @employee.TerminationReason
+                                        </span>
+                                    }
+                                </small>
+
+                            </div>
+
+                            <div class="employee-status">
+
+                                <span class="status terminated">
+                                    ● İşten Ayrıldı
+                                </span>
+
+                            </div>
+
+                            <div class="employee-actions">
+
+                                <a href="@Url.Action("Details", "EmployeePanel", new { id = employee.Id })"
+                                   class="action-btn detail-btn">
+                                    👁 Detay
+                                </a>
+
+                            </div>
+
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="group-empty">
+                        İşten ayrılan personel bulunmuyor.
+                    </div>
+                }
+
+            </div>
+
+
+            @if (!Model.Any())
+            {
+                <div class="empty">
+                    <div class="empty-icon">👨‍💼</div>
+                    <h3>Henüz personel bulunmuyor.</h3>
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<div id="leaveModal"
+     class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <h2>🏖️ Personeli İzinli Yap</h2>
+                <p id="leaveEmployeeName"></p>
+            </div>
+
+            <button type="button"
+                    class="close-btn"
+                    onclick="closeLeaveModal()">
+                ×
+            </button>
+
+        </div>
+
+        <form action="@Url.Action("SetLeave", "EmployeePanel")"
+              method="post">
+
+            <input type="hidden"
+                   id="leaveEmployeeId"
+                   name="id" />
+
+            <label for="leaveStartDate">
+                İzin Başlangıç Tarihi
+            </label>
+
+            <input type="date"
+                   id="leaveStartDate"
+                   name="leaveStartDate"
+                   required />
+
+            <label for="leaveEndDate">
+                İzin Bitiş Tarihi
+            </label>
+
+            <input type="date"
+                   id="leaveEndDate"
+                   name="leaveEndDate"
+                   required />
+
+            <label for="leaveType">
+                İzin Türü
+            </label>
+
+            <select id="leaveType"
+                    name="leaveType">
+
+                <option value="Yıllık İzin">
+                    Yıllık İzin
+                </option>
+
+                <option value="Mazeret İzni">
+                    Mazeret İzni
+                </option>
+
+                <option value="Ücretsiz İzin">
+                    Ücretsiz İzin
+                </option>
+
+                <option value="Diğer">
+                    Diğer
+                </option>
+
+            </select>
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="cancel-btn"
+                        onclick="closeLeaveModal()">
+                    Vazgeç
+                </button>
+
+                <button type="submit"
+                        class="save-btn">
+                    🏖️ İzni Kaydet
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+<div id="terminateModal"
+     class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <div>
+                <h2>🔴 İşten Çıkar</h2>
+                <p id="terminateEmployeeName"></p>
+            </div>
+
+            <button type="button"
+                    class="close-btn"
+                    onclick="closeTerminateModal()">
+                ×
+            </button>
+
+        </div>
+
+        <form action="@Url.Action("Terminate", "EmployeePanel")"
+              method="post">
+
+            <input type="hidden"
+                   id="terminateEmployeeId"
+                   name="id" />
+
+            <label for="terminationDate">
+                İşten Ayrılma Tarihi
+            </label>
+
+            <input type="date"
+                   id="terminationDate"
+                   name="terminationDate"
+                   required />
+
+            <label for="terminationReason">
+                Ayrılma Nedeni
+            </label>
+
+            <textarea id="terminationReason"
+                      name="terminationReason"
+                      rows="4"
+                      placeholder="Ayrılma nedenini yazın..."></textarea>
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="cancel-btn"
+                        onclick="closeTerminateModal()">
+                    Vazgeç
+                </button>
+
+                <button type="submit"
+                        class="danger-btn">
+                    🔴 İşten Çıkar
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        background: #f6f7fb;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    .employees-page {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .page-header p {
+            margin-top: 7px;
+            color: #6b7280;
+        }
+
+   
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    .stat-card {
+        width: 100%;
+        border: 2px solid transparent;
+        background: white;
+        border-radius: 14px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.06);
+        cursor: pointer;
+        text-align: left;
+        font-family: inherit;
+        transition: .2s;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,.10);
+        }
+
+    .stat-all:hover {
+        border-color: #c7d2fe;
+    }
+
+    .stat-active:hover {
+        border-color: #86efac;
+    }
+
+    .stat-leave:hover {
+        border-color: #fcd34d;
+    }
+
+    .stat-terminated:hover {
+        border-color: #fca5a5;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #eef2ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+        .stat-icon.green {
+            background: #dcfce7;
+        }
+
+        .stat-icon.yellow {
+            background: #fef3c7;
+        }
+
+        .stat-icon.red {
+            background: #fee2e2;
+        }
+
+    .stat-card span {
+        display: block;
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+
+    .stat-card strong {
+        font-size: 24px;
+    }
+
+    /* FILTER */
+
+    .filter-bar {
+        background: white;
+        border-radius: 12px;
+        padding: 12px 18px;
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 3px 12px rgba(0,0,0,.04);
+    }
+
+    .filter-title {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+        .filter-title span {
+            font-size: 18px;
+        }
+
+    .show-all-btn {
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+        color: #4f46e5;
+        padding: 8px 13px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+        .show-all-btn:hover {
+            background: #eef2ff;
+        }
+
+    
+
+    .employees-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.06);
+        overflow: hidden;
+    }
+
+    .list-header {
+        padding: 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+    }
+
+        .list-header h2 {
+            margin: 0;
+        }
+
+        .list-header p {
+            margin-top: 5px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+    .search-box {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 9px 13px;
+        width: 300px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+        }
+
+    .section-title {
+        padding: 14px 22px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .section-title span:last-child {
+            font-size: 11px;
+            opacity: .7;
+        }
+
+    .active-title {
+        color: #15803d;
+        background: #f0fdf4;
+    }
+
+    .leave-title {
+        color: #a16207;
+        background: #fffbeb;
+        margin-top: 10px;
+    }
+
+    .terminated-title {
+        color: #b91c1c;
+        background: #fff1f2;
+        margin-top: 10px;
+    }
+
+    .employee-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 18px 22px;
+        border-bottom: 1px solid #f1f1f1;
+        transition: .2s;
+    }
+
+        .employee-item:hover {
+            background: #f8faff;
+        }
+
+    .leave-item {
+        background: #fffdf5;
+    }
+
+    .terminated-item {
+        background: #fafafa;
+        opacity: .65;
+    }
+
+    .employee-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #e0e7ff;
+        color: #4338ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .leave-avatar {
+        background: #fef3c7;
+        color: #a16207;
+    }
+
+    .terminated-avatar {
+        background: #f3f4f6;
+        color: #9ca3af;
+    }
+
+    .employee-info {
+        flex: 1;
+    }
+
+        .employee-info strong {
+            display: block;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .employee-info span {
+            display: block;
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .employee-info small {
+            color: #9ca3af;
+            font-size: 11px;
+        }
+
+    .employee-status {
+        min-width: 125px;
+    }
+
+    .status {
+        padding: 6px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+        .status.active {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status.leave {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status.terminated {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+
+    .employee-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+        .employee-actions form {
+            margin: 0;
+        }
+
+    .action-btn {
+        border: 1px solid #e5e7eb;
+        background: white;
+        border-radius: 9px;
+        padding: 8px 11px;
+        text-decoration: none;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        display: inline-block;
+    }
+
+    .detail-btn {
+        color: #4f46e5;
+    }
+
+    .leave-btn {
+        color: #b45309;
+        background: #fffbeb;
+        border-color: #fde68a;
+    }
+
+    .terminate-btn {
+        color: #b91c1c;
+        background: #fff1f2;
+        border-color: #fecdd3;
+    }
+
+    .active-btn {
+        color: #15803d;
+        background: #ecfdf5;
+        border-color: #bbf7d0;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    
+    .group-empty {
+        padding: 25px;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    .empty {
+        padding: 50px;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .empty-icon {
+        font-size: 40px;
+        margin-bottom: 10px;
+    }
+
+    /* MODAL */
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 99999;
+        inset: 0;
+        background: rgba(15,23,42,.55);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal-content {
+        background: white;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 18px;
+        padding: 25px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .modal-header p {
+            margin: 7px 0 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+    .close-btn {
+        border: none;
+        background: #f3f4f6;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        font-size: 23px;
+        cursor: pointer;
+    }
+
+    .modal-content label {
+        display: block;
+        margin: 14px 0 6px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .modal-content input,
+    .modal-content select,
+    .modal-content textarea {
+        width: 100%;
+        padding: 11px;
+        border: 1px solid #d1d5db;
+        border-radius: 9px;
+        font-family: inherit;
+        outline: none;
+    }
+
+        .modal-content input:focus,
+        .modal-content select:focus,
+        .modal-content textarea:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.08);
+        }
+
+    .modal-content textarea {
+        resize: vertical;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .cancel-btn,
+    .save-btn,
+    .danger-btn {
+        padding: 10px 16px;
+        border-radius: 9px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .cancel-btn {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .save-btn {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .danger-btn {
+        background: #dc2626;
+        color: white;
+    }
+
+ 
+
+    .filtered-out {
+        display: none !important;
+    }
+
+    .search-hidden {
+        display: none !important;
+    }
+
+    
+
+    @@media (max-width: 1100px) {
+
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .employee-item {
+            flex-wrap: wrap;
+        }
+
+        .employee-actions {
+            width: 100%;
+            margin-left: 59px;
+        }
+    }
+
+    @@media (max-width: 700px) {
+
+        .employees-page {
+            padding: 20px;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .show-all-btn {
+            width: 100%;
+        }
+
+        .list-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+        .employee-status {
+            min-width: auto;
+        }
+
+        .employee-actions {
+            margin-left: 0;
+            flex-wrap: wrap;
+        }
+    }
+
+</style>
+
+
+<script>
+
+    let currentGroup = "all";
+
+    
+
+    function showEmployeeGroup(group) {
+
+        currentGroup = group;
+
+        const activeSection =
+            document.getElementById("activeSection");
+
+        const leaveSection =
+            document.getElementById("leaveSection");
+
+        const terminatedSection =
+            document.getElementById("terminatedSection");
+
+        const currentFilterIcon =
+            document.getElementById("currentFilterIcon");
+
+        const currentFilterText =
+            document.getElementById("currentFilterText");
+
+        const listDescription =
+            document.getElementById("listDescription");
+
+        activeSection.classList.remove("filtered-out");
+        leaveSection.classList.remove("filtered-out");
+        terminatedSection.classList.remove("filtered-out");
+
+        if (group === "all") {
+
+            currentFilterIcon.textContent = "👥";
+
+            currentFilterText.textContent =
+                "Tüm Personeller";
+
+            listDescription.textContent =
+                "Aktif çalışanlar üstte, izinliler ortada, ayrılanlar en altta gösterilir.";
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        }
+
+        if (group === "active") {
+
+            leaveSection.classList.add("filtered-out");
+            terminatedSection.classList.add("filtered-out");
+
+            currentFilterIcon.textContent = "🟢";
+
+            currentFilterText.textContent =
+                "Aktif Personeller";
+
+            listDescription.textContent =
+                "Şu anda aktif olarak çalışan personeller gösteriliyor.";
+
+            activeSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+        if (group === "leave") {
+
+            activeSection.classList.add("filtered-out");
+            terminatedSection.classList.add("filtered-out");
+
+            currentFilterIcon.textContent = "🏖️";
+
+            currentFilterText.textContent =
+                "İzinli Personeller";
+
+            listDescription.textContent =
+                "Şu anda izinli olan personeller gösteriliyor.";
+
+            leaveSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+        if (group === "terminated") {
+
+            activeSection.classList.add("filtered-out");
+            leaveSection.classList.add("filtered-out");
+
+            currentFilterIcon.textContent = "🔴";
+
+            currentFilterText.textContent =
+                "İşten Ayrılan Personeller";
+
+            listDescription.textContent =
+                "İşten ayrılmış personeller gösteriliyor.";
+
+            terminatedSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+        applySearch();
+    }
+
+
+
+    function applySearch() {
+
+        const searchBox =
+            document.getElementById("employeeSearch");
+
+        if (!searchBox)
+            return;
+
+        const search =
+            searchBox.value.toLowerCase().trim();
+
+        document.querySelectorAll(".employee-item")
+            .forEach(function (item) {
+
+                const text =
+                    item.innerText.toLowerCase();
+
+                if (text.includes(search)) {
+                    item.classList.remove("search-hidden");
+                }
+                else {
+                    item.classList.add("search-hidden");
+                }
+
+            });
+    }
+
+
+
+    function openLeaveModal(id, name) {
+
+        document.getElementById("leaveEmployeeId").value = id;
+
+        document.getElementById("leaveEmployeeName").textContent =
+            name + " için izin bilgilerini girin.";
+
+        const today =
+            new Date().toISOString().split("T")[0];
+
+        document.getElementById("leaveStartDate").value =
+            today;
+
+        document.getElementById("leaveEndDate").value =
+            today;
+
+        document.getElementById("leaveModal").style.display =
+            "flex";
+    }
+
+
+    function closeLeaveModal() {
+
+        document.getElementById("leaveModal").style.display =
+            "none";
+    }
+
+
+
+    function openTerminateModal(id, name) {
+
+        document.getElementById("terminateEmployeeId").value =
+            id;
+
+        document.getElementById("terminateEmployeeName").textContent =
+            name + " adlı personelin işten ayrılma bilgilerini girin.";
+
+        const today =
+            new Date().toISOString().split("T")[0];
+
+        document.getElementById("terminationDate").value =
+            today;
+
+        document.getElementById("terminationReason").value =
+            "";
+
+        document.getElementById("terminateModal").style.display =
+            "flex";
+    }
+
+
+    function closeTerminateModal() {
+
+        document.getElementById("terminateModal").style.display =
+            "none";
+    }
+
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const searchBox =
+            document.getElementById("employeeSearch");
+
+        if (searchBox) {
+
+            searchBox.addEventListener(
+                "input",
+                applySearch
+            );
+
+        }
+
+        const leaveModal =
+            document.getElementById("leaveModal");
+
+        const terminateModal =
+            document.getElementById("terminateModal");
+
+        window.addEventListener("click", function (event) {
+
+            if (event.target === leaveModal) {
+                closeLeaveModal();
+            }
+
+            if (event.target === terminateModal) {
+                closeTerminateModal();
+            }
+
+        });
+
+    });
+
+</script>

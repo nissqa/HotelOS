@@ -1,0 +1,276 @@
+﻿@model IEnumerable<HotelOS.Models.Room>
+
+@{
+    ViewData["Title"] = "Dolu Odalar";
+    var search = ViewData["Search"] as string;
+}
+
+<style>
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .back-btn {
+        text-decoration: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        background: #eee;
+        color: #333;
+    }
+
+    .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .search-bar input {
+        width: 320px;
+        max-width: 100%;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 15px;
+    }
+
+    .count-badge {
+        background: #ede9fe;
+        color: #5b21b6;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+
+    .room-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 18px;
+    }
+
+    .room-card {
+        background: white;
+        padding: 22px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,.08);
+        cursor: pointer;
+        border: none;
+        text-align: left;
+        transition: .2s;
+        border-top: 4px solid #ef4444;
+    }
+
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,.12);
+        }
+
+    .room-number {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 6px;
+    }
+
+    .room-type {
+        color: #666;
+        margin-bottom: 14px;
+    }
+
+    .status {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 6px 12px;
+        border-radius: 10px;
+        display: inline-block;
+        font-size: 13px;
+        font-weight: bold;
+    }
+
+    .empty {
+        text-align: center;
+        padding: 60px;
+        background: white;
+        border-radius: 15px;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+    .modal-box {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        width: 380px;
+        max-width: 90vw;
+        box-shadow: 0 20px 50px rgba(0,0,0,.25);
+        position: relative;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        border: none;
+        background: #f3f4f6;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .modal-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .modal-subtitle {
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .modal-guest {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 9px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+    }
+
+        .modal-row:last-child {
+            border-bottom: none;
+        }
+
+    .modal-label {
+        color: #777;
+    }
+
+    .modal-loading {
+        text-align: center;
+        color: #999;
+        padding: 20px 0;
+    }
+</style>
+
+<div class="header">
+    <div>
+        <h1>🛏️ Dolu Odalar</h1>
+        <p>Şu anda dolu olan odalar.</p>
+    </div>
+
+    <a href="/CheckIn/Index" class="back-btn">← Check-in Sayfası</a>
+</div>
+
+<div class="toolbar">
+    <div class="search-bar">
+        <form method="get" action="/RoomsView/Occupied">
+            <input type="text" name="search" value="@search" placeholder="Oda numarasına göre ara..." />
+        </form>
+    </div>
+    <div class="count-badge">@Model.Count() dolu oda</div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty">
+        <h3>Dolu oda bulunamadı</h3>
+    </div>
+}
+else
+{
+    <div class="room-grid">
+        @foreach (var room in Model)
+        {
+            <button type="button" class="room-card" onclick="odaDetayGoster(@room.Id)">
+                <div class="room-number">🛏️ Oda @room.RoomNumber</div>
+                <div class="room-type">@(room.RoomType?.TypeName ?? "-")</div>
+                <span class="status">● Dolu</span>
+            </button>
+        }
+    </div>
+}
+
+<!-- ODA DETAY POPUP -->
+<div class="modal-overlay" id="odaModal" onclick="if(event.target===this) modalKapat()">
+    <div class="modal-box">
+        <button class="modal-close" onclick="modalKapat()">✕</button>
+        <div id="modalIcerik">
+            <div class="modal-loading">Yükleniyor...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function odaDetayGoster(roomId) {
+        const overlay = document.getElementById('odaModal');
+        const icerik = document.getElementById('modalIcerik');
+        icerik.innerHTML = '<div class="modal-loading">Yükleniyor...</div>';
+        overlay.classList.add('active');
+
+        try {
+            const res = await fetch('/RoomsView/DetailJson/' + roomId);
+            if (!res.ok) {
+                icerik.innerHTML = '<div class="modal-loading">Bilgi alınamadı.</div>';
+                return;
+            }
+            const data = await res.json();
+
+            if (!data.hasReservation) {
+                icerik.innerHTML = `
+                    <div class="modal-title">🛏️ Oda ${data.roomNumber}</div>
+                    <div class="modal-subtitle">${data.roomType}</div>
+                    <div class="modal-loading">Bu oda için aktif rezervasyon bulunamadı.</div>
+                `;
+                return;
+            }
+
+            icerik.innerHTML = `
+                <div class="modal-title">🛏️ Oda ${data.roomNumber}</div>
+                <div class="modal-subtitle">${data.roomType}</div>
+                <div class="modal-guest">👤 ${data.guestName}</div>
+                <div class="modal-row"><span class="modal-label">Yetişkin / Çocuk</span><span>${data.adultCount} yetişkin, ${data.childCount} çocuk</span></div>
+                <div class="modal-row"><span class="modal-label">Giriş</span><span>${data.checkIn}</span></div>
+                <div class="modal-row"><span class="modal-label">Çıkış</span><span>${data.checkOut}</span></div>
+                <div class="modal-row"><span class="modal-label">Kalan Gün</span><span>${data.kalanGun} gün</span></div>
+            `;
+        } catch (e) {
+            icerik.innerHTML = '<div class="modal-loading">Bir hata oluştu.</div>';
+        }
+    }
+
+    function modalKapat() {
+        document.getElementById('odaModal').classList.remove('active');
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') modalKapat();
+    });
+</script>

@@ -1,0 +1,268 @@
+﻿@model IEnumerable<HotelOS.Models.Reservation>
+
+@{
+    ViewData["Title"] = "Rezervasyonlar";
+}
+
+<div style="padding: 35px; background: #f5f7fb; min-height: 100vh;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+
+
+
+        <div>
+            <h1 style="color:#172554; margin-bottom:8px;">
+                📅 Rezervasyonlar
+            </h1>
+
+            <p style="color:#6b7280;">
+                Otel rezervasyonlarını görüntüleyin ve yönetin.
+            </p>
+        </div>
+
+        <div>
+
+            <a href="/Admin"
+               style="display:inline-block;
+                      padding:12px 18px;
+                      background:#e5e7eb;
+                      color:#374151;
+                      text-decoration:none;
+                      border-radius:10px;
+                      margin-right:8px;">
+                ← Dashboard
+            </a>
+
+            <a href="/ReservationCreate"
+               style="display:inline-block;
+                      padding:12px 18px;
+                      background:#2563eb;
+                      color:white;
+                      text-decoration:none;
+                      border-radius:10px;">
+                + Yeni Rezervasyon
+            </a>
+
+        </div>
+
+    </div>
+
+    <div style="display:flex;
+            justify-content:flex-end;
+            margin-top:15px;
+            margin-bottom:15px;">
+
+        <div style="position:relative;
+                width:380px;">
+
+            <span style="position:absolute;
+                     left:14px;
+                     top:50%;
+                     transform:translateY(-50%);
+                     color:#9ca3af;">
+                🔍
+            </span>
+
+            <input type="text"
+                   id="reservationSearch"
+                   placeholder="Müşteri adı, soyadı veya oda numarası ara..."
+                   style="width:100%;
+                      padding:12px 15px 12px 42px;
+                      border:1px solid #d1d5db;
+                      border-radius:12px;
+                      font-size:14px;
+                      outline:none;" />
+
+        </div>
+
+    </div>
+
+    <div style="background:white;
+                padding:25px;
+                border-radius:16px;
+                box-shadow:0 4px 15px rgba(0,0,0,0.06);">
+
+        <div style="display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    margin-bottom:20px;">
+
+            <h2>Rezervasyon Listesi</h2>
+
+            <span style="color:#6b7280;">
+                Toplam: @Model.Count()
+            </span>
+
+        </div>
+
+
+        @if (Model.Any())
+        {
+            <div style="overflow-x:auto;">
+
+                <table style="width:100%;
+                                  border-collapse:collapse;">
+
+                    <thead>
+
+                        <tr style="background:#f8fafc;">
+
+                            <th style="padding:15px; text-align:left;">
+                                No
+                            </th>
+
+                            <th style="padding:15px; text-align:left;">
+                                Müşteri
+                            </th>
+
+                            <th style="padding:15px; text-align:left;">
+                                Oda
+                            </th>
+
+                            <th style="padding:15px; text-align:left;">
+                                Giriş
+                            </th>
+
+                            <th style="padding:15px; text-align:left;">
+                                Çıkış
+                            </th>
+
+                            <th style="padding:15px; text-align:left;">
+                                Yetişkin
+                            </th>
+
+                            <th style="padding:15px; text-align:left;">
+                                Çocuk
+                            </th>
+
+                            <th style="padding:15px; text-align:left;">
+                                Toplam
+                            </th>
+
+                            <th style="padding:15px; text-align:left;">
+                                Durum
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var reservation in Model)
+                        {
+                            <tr class="reservation-row"
+                                style="border-top:1px solid #eef0f4;">
+
+                                <td style="padding:15px;">
+                                    #@reservation.Id
+                                </td>
+
+                                <td style="padding:15px; font-weight:bold;">
+
+                                    @(reservation.Customer?.FirstName ?? "Bilinmiyor")
+                                    @(reservation.Customer?.LastName ?? "")
+
+                                </td>
+
+                                <td style="padding:15px;">
+
+                                    @(reservation.Room?.RoomNumber ?? "-")
+
+                                    <div style="font-size:12px; color:#9ca3af;">
+                                        @(reservation.Room?.RoomType?.TypeName ?? "")
+                                    </div>
+
+                                </td>
+
+                                <td style="padding:15px;">
+                                    @reservation.CheckIn.ToString("dd.MM.yyyy")
+                                </td>
+
+                                <td style="padding:15px;">
+                                    @reservation.CheckOut.ToString("dd.MM.yyyy")
+                                </td>
+
+                                <td style="padding:15px;">
+                                    👨 @reservation.AdultCount
+                                </td>
+
+                                <td style="padding:15px;">
+                                    👶 @reservation.ChildCount
+                                </td>
+
+                                <td style="padding:15px; font-weight:bold;">
+                                    ₺@reservation.TotalPrice.ToString("N2")
+                                </td>
+
+                                <td style="padding:15px;">
+                                    <span style="padding:6px 10px;
+                                                         background:#dcfce7;
+                                                         color:#166534;
+                                                         border-radius:20px;
+                                                         font-size:12px;">
+                                        @reservation.Status
+                                    </span>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+        else
+        {
+            <div style="text-align:center; padding:60px;">
+
+                <div style="font-size:50px;">
+                    📅
+                </div>
+
+                <h3 style="margin:15px 0;">
+                    Henüz rezervasyon bulunmuyor
+                </h3>
+
+                <p style="color:#6b7280;">
+                    Yeni bir rezervasyon oluşturarak başlayabilirsiniz.
+                </p>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const reservationSearch =
+        document.getElementById("reservationSearch");
+
+    reservationSearch.addEventListener("keyup", function () {
+
+        const search =
+            this.value.toLowerCase().trim();
+
+        document
+            .querySelectorAll(".reservation-row")
+            .forEach(function (row) {
+
+                const text =
+                    row.innerText.toLowerCase();
+
+                row.style.display =
+                    text.includes(search)
+                        ? ""
+                        : "none";
+
+            });
+
+    });
+
+</script>

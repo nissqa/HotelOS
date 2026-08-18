@@ -1,0 +1,909 @@
+﻿@model List<HotelOS.Models.Invoice>
+
+@{
+    ViewData["Title"] = "Faturalar";
+
+    var total = Model?.Count ?? 0;
+    var totalAmount = Model?.Sum(x => x.TotalAmount) ?? 0;
+    var totalTax = Model?.Sum(x => x.Tax) ?? 0;
+}
+
+<div class="invoice-page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>🧾 Faturalar</h1>
+            <p>Otel müşterilerinin faturalarını görüntüleyin ve yönetin.</p>
+        </div>
+
+        <div class="header-info">
+            📋 Toplam Fatura:
+            <strong>@total</strong>
+        </div>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat-card">
+
+            <div class="stat-icon blue">
+                🧾
+            </div>
+
+            <div>
+                <span>Toplam Fatura</span>
+                <strong>@total</strong>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon green">
+                💰
+            </div>
+
+            <div>
+                <span>Toplam Tutar</span>
+                <strong>₺@totalAmount.ToString("N2")</strong>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon orange">
+                🧮
+            </div>
+
+            <div>
+                <span>Toplam Vergi</span>
+                <strong>₺@totalTax.ToString("N2")</strong>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon purple">
+                📅
+            </div>
+
+            <div>
+                <span>Son Fatura</span>
+
+                <strong>
+                    @(Model != null && Model.Any()
+                                        ? Model.Max(x => x.IssueDate).ToString("dd.MM.yyyy")
+                                        : "-")
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-card">
+
+        <div class="table-header">
+
+            <div>
+                <h2>Fatura Listesi</h2>
+                <p>Oluşturulan tüm faturalar</p>
+            </div>
+
+            <div class="search-box">
+
+                <span>🔍</span>
+
+                <input type="text"
+                       id="searchInput"
+                       placeholder="Fatura no, müşteri veya oda ara..." />
+
+            </div>
+
+        </div>
+
+
+        <div class="table-container">
+
+            <table id="invoiceTable">
+
+                <thead>
+
+                    <tr>
+                        <th>Fatura No</th>
+                        <th>Müşteri</th>
+                        <th>Oda</th>
+                        <th>Rezervasyon</th>
+                        <th>Toplam Tutar</th>
+                        <th>Vergi</th>
+                        <th>Tarih</th>
+                        <th>İşlem</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var invoice in Model)
+                        {
+                            var customer = invoice.Reservation?.Customer;
+
+                            var customerName = customer != null
+                            ? $"{customer.FirstName} {customer.LastName}"
+                            : "Belirtilmemiş";
+
+                            var roomNumber =
+                            invoice.Reservation?.Room?.RoomNumber ?? "-";
+
+                            var firstLetter =
+                            customer != null &&
+                            !string.IsNullOrWhiteSpace(customer.FirstName)
+                            ? customer.FirstName.Substring(0, 1).ToUpper()
+                            : "?";
+
+                            <tr class="invoice-row">
+
+                                <td>
+
+                                    <span class="invoice-number">
+                                        🧾 @invoice.InvoiceNo
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="customer">
+
+                                        <div class="avatar">
+                                            @firstLetter
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                @customerName
+                                            </strong>
+
+                                            <small>
+                                                Rezervasyon #@invoice.ReservationId
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="room-badge">
+                                        🛏️ @roomNumber
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="reservation-badge">
+                                        #@invoice.ReservationId
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <strong class="amount">
+                                        ₺@invoice.TotalAmount.ToString("N2")
+                                    </strong>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span class="tax">
+                                        ₺@invoice.Tax.ToString("N2")
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="date">
+
+                                        <strong>
+                                            @invoice.IssueDate.ToString("dd.MM.yyyy")
+                                        </strong>
+
+                                        <small>
+                                            @invoice.IssueDate.ToString("HH:mm")
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+
+                                    <button type="button"
+                                            class="detail-btn"
+                                            title="Fatura detayını görüntüle"
+                                            onclick="openInvoiceModal(@invoice.Id)">
+                                        👁️
+                                    </button>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="8">
+
+                                <div class="empty">
+
+                                    <div class="empty-icon">
+                                        🧾
+                                    </div>
+
+                                    <strong>
+                                        Henüz fatura bulunmuyor
+                                    </strong>
+
+                                    <span>
+                                        Sistemde kayıtlı herhangi bir fatura bulunmamaktadır.
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                    <tr id="noResultsRow" style="display:none;">
+
+                        <td colspan="8">
+
+                            <div class="empty">
+
+                                <div class="empty-icon">
+                                    🔍
+                                </div>
+
+                                <strong>
+                                    Sonuç bulunamadı
+                                </strong>
+
+                                <span>
+                                    Arama kriterlerinize uygun fatura bulunamadı.
+                                </span>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: #f5f7fb;
+        color: #1f2937;
+    }
+
+    .invoice-page {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+            color: #172554;
+        }
+
+        .page-header p {
+            margin-top: 7px;
+            color: #6b7280;
+        }
+
+    .header-info {
+        background: white;
+        padding: 12px 18px;
+        border-radius: 10px;
+        box-shadow: 0 3px 12px rgba(0,0,0,.05);
+        color: #6b7280;
+    }
+
+        .header-info strong {
+            color: #4f46e5;
+        }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.06);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+        .stat-icon.blue {
+            background: #dbeafe;
+        }
+
+        .stat-icon.green {
+            background: #dcfce7;
+        }
+
+        .stat-icon.orange {
+            background: #ffedd5;
+        }
+
+        .stat-icon.purple {
+            background: #ede9fe;
+        }
+
+    .stat-card span {
+        display: block;
+        color: #6b7280;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .stat-card strong {
+        font-size: 21px;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 3px 15px rgba(0,0,0,.06);
+    }
+
+    .table-header {
+        padding: 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .table-header p {
+            color: #6b7280;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+    .search-box {
+        width: 350px;
+        height: 42px;
+        border: 1px solid #ddd;
+        border-radius: 9px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .search-box:focus-within {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.08);
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 13px;
+        }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 1100px;
+    }
+
+    th {
+        background: #fafafa;
+        color: #6b7280;
+        text-align: left;
+        padding: 15px 18px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 15px 18px;
+        border-top: 1px solid #f1f1f1;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .invoice-row:hover {
+        background: #fafafa;
+    }
+
+    .invoice-number {
+        display: inline-block;
+        background: #eef2ff;
+        color: #4338ca;
+        padding: 7px 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .customer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e0e7ff;
+        color: #4338ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    .customer strong {
+        display: block;
+    }
+
+    .customer small {
+        display: block;
+        color: #9ca3af;
+        font-size: 11px;
+        margin-top: 3px;
+    }
+
+    .room-badge {
+        background: #f3f4f6;
+        padding: 7px 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .reservation-badge {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 6px 9px;
+        border-radius: 7px;
+        font-size: 12px;
+    }
+
+    .amount {
+        color: #15803d;
+        white-space: nowrap;
+    }
+
+    .tax {
+        color: #b45309;
+        white-space: nowrap;
+    }
+
+    .date strong {
+        display: block;
+        font-size: 13px;
+    }
+
+    .date small {
+        color: #9ca3af;
+        font-size: 11px;
+    }
+
+    .detail-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: #eef2ff;
+        color: #4338ca;
+        text-decoration: none;
+        transition: .2s;
+        border: none;
+        cursor: pointer;
+    }
+
+        .detail-btn:hover {
+            background: #e0e7ff;
+            transform: translateY(-1px);
+        }
+
+    .empty {
+        padding: 60px 20px;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    .empty-icon {
+        font-size: 40px;
+        margin-bottom: 12px;
+    }
+
+    .empty strong {
+        display: block;
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .empty span {
+        display: block;
+        margin-top: 5px;
+        font-size: 13px;
+    }
+
+    .invoice-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .invoice-modal-content {
+        background: white;
+        width: 650px;
+        max-width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        border-radius: 18px;
+        padding: 30px;
+        position: relative;
+        box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+
+    .invoice-modal-close {
+        position: absolute;
+        top: 12px;
+        right: 15px;
+        border: none;
+        background: #f3f4f6;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+        .invoice-modal-close:hover {
+            background: #e5e7eb;
+        }
+
+    .modal-title {
+        margin-bottom: 25px;
+    }
+
+        .modal-title h2 {
+            margin: 0;
+            color: #172554;
+        }
+
+        .modal-title p {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+    .modal-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .modal-info-box {
+        background: #f8fafc;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+        .modal-info-box span {
+            display: block;
+            color: #6b7280;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .modal-info-box strong {
+            font-size: 15px;
+        }
+
+    .modal-total {
+        margin-top: 20px;
+        padding: 18px;
+        border-radius: 12px;
+        background: #eef2ff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+        .modal-total strong {
+            font-size: 22px;
+            color: #4338ca;
+        }
+
+    @@media (max-width: 1100px) {
+
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .table-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 700px) {
+
+        .invoice-page {
+            padding: 20px;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+
+    @@media (max-width: 600px) {
+
+        .modal-info-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+</style>
+
+
+<div id="invoiceModal" class="invoice-modal">
+
+    <div class="invoice-modal-content">
+
+        <button type="button"
+                class="invoice-modal-close"
+                onclick="closeInvoiceModal()">
+            ×
+        </button>
+
+        <div id="invoiceModalBody">
+            Yükleniyor...
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const searchInput =
+        document.getElementById("searchInput");
+
+    const noResultsRow =
+        document.getElementById("noResultsRow");
+
+    if (searchInput) {
+
+        searchInput.addEventListener("input", function () {
+
+            const search =
+                this.value.toLowerCase().trim();
+
+            const rows =
+                document.querySelectorAll(".invoice-row");
+
+            let visibleCount = 0;
+
+            rows.forEach(function (row) {
+
+                const text =
+                    row.innerText.toLowerCase();
+
+                const show =
+                    text.includes(search);
+
+                row.style.display =
+                    show ? "" : "none";
+
+                if (show) {
+                    visibleCount++;
+                }
+
+            });
+
+            if (noResultsRow) {
+
+                noResultsRow.style.display =
+                    visibleCount === 0 && search !== ""
+                        ? ""
+                        : "none";
+            }
+
+        });
+
+    }
+
+
+    async function openInvoiceModal(id) {
+
+        const modal =
+            document.getElementById("invoiceModal");
+
+        const body =
+            document.getElementById("invoiceModalBody");
+
+        modal.style.display = "flex";
+
+        body.innerHTML =
+            "<div style='padding:30px;text-align:center;'>Yükleniyor...</div>";
+
+        try {
+
+            const response =
+                await fetch("/InvoicePanel/Details/" + id);
+
+            if (!response.ok) {
+                throw new Error("Fatura bilgileri alınamadı.");
+            }
+
+            const html =
+                await response.text();
+
+            const parser =
+                new DOMParser();
+
+            const doc =
+                parser.parseFromString(html, "text/html");
+
+            const invoiceCard =
+                doc.querySelector(".invoice-card");
+
+            if (invoiceCard) {
+
+                body.innerHTML =
+                    invoiceCard.outerHTML;
+
+            }
+            else {
+
+                body.innerHTML =
+                    "<p style='padding:30px;'>Fatura detayları yüklenemedi.</p>";
+
+            }
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            body.innerHTML =
+                "<p style='padding:30px;'>Fatura detayları yüklenirken hata oluştu.</p>";
+
+        }
+
+    }
+
+
+    function closeInvoiceModal() {
+
+        const modal =
+            document.getElementById("invoiceModal");
+
+        modal.style.display = "none";
+
+        document.getElementById("invoiceModalBody").innerHTML = "";
+
+    }
+
+
+    document.addEventListener("click", function (event) {
+
+        const modal =
+            document.getElementById("invoiceModal");
+
+        if (event.target === modal) {
+
+            closeInvoiceModal();
+
+        }
+
+    });
+
+</script>

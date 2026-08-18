@@ -1,0 +1,655 @@
+﻿@{
+    ViewData["Title"] = "Havuz Yönetimi";
+}
+
+<link rel="stylesheet" href="~/css/pool.css" />
+
+<div class="pool-page">
+
+    <div class="pool-header">
+        <div>
+            <h1>🏊 Havuz Yönetimi</h1>
+            <p>Otel havuzlarının durumunu, personelleri ve bakım işlemlerini yönetin.</p>
+        </div>
+
+        <button class="primary-btn" onclick="openMaintenanceModal()">
+            + Bakım Oluştur
+        </button>
+    </div>
+
+
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-icon">🏊</div>
+            <div>
+                <span>Aktif Havuz</span>
+                <strong id="activePoolCount">2</strong>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🔧</div>
+            <div>
+                <span>Bakım Bekleyen</span>
+                <strong id="maintenanceCount">1</strong>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">👷</div>
+            <div>
+                <span>Havuz Personeli</span>
+                <strong>4</strong>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div>
+                <span>Bugün Tamamlanan</span>
+                <strong>6</strong>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <div class="section">
+
+        <div class="section-title">
+            <div>
+                <h2>🏊 Havuzlar</h2>
+                <p>Havuzların anlık durumlarını takip edin.</p>
+            </div>
+
+            <select id="poolFilter" onchange="filterPools()">
+                <option value="all">Tüm Havuzlar</option>
+                <option value="open">Açık</option>
+                <option value="closed">Kapalı</option>
+                <option value="maintenance">Bakımda</option>
+            </select>
+        </div>
+
+
+        <div class="pool-grid">
+
+           
+
+            <div class="pool-card" data-status="open">
+
+                <div class="pool-card-top">
+                    <div class="pool-icon">🏊</div>
+
+                    <span class="status status-open">
+                        ● Açık
+                    </span>
+                </div>
+
+                <h3>Büyük Havuz</h3>
+
+                <p class="pool-description">
+                    Otelin ana açık yüzme havuzu.
+                </p>
+
+                <div class="pool-info">
+
+                    <div>
+                        <span>Personel</span>
+                        <strong>Ahmet Yılmaz</strong>
+                    </div>
+
+                    <div>
+                        <span>Son Bakım</span>
+                        <strong>08.08.2026</strong>
+                    </div>
+
+                    <div>
+                        <span>Çalışma Saati</span>
+                        <strong>08:00 - 22:00</strong>
+                    </div>
+
+                </div>
+
+                <div class="card-buttons">
+                    <button class="secondary-btn"
+                            onclick="openPoolDetails('Büyük Havuz', 'Açık', 'Ahmet Yılmaz', '08.08.2026', '08:00 - 22:00')">
+                        Detayları Gör
+                    </button>
+
+                    <button class="warning-btn"
+                            onclick="openMaintenanceModal('Büyük Havuz')">
+                        🔧 Bakım Oluştur
+                    </button>
+                </div>
+
+            </div>
+
+
+            <div class="pool-card" data-status="open">
+
+                <div class="pool-card-top">
+                    <div class="pool-icon">🧒</div>
+
+                    <span class="status status-open">
+                        ● Açık
+                    </span>
+                </div>
+
+                <h3>Çocuk Havuzu</h3>
+
+                <p class="pool-description">
+                    Çocuk misafirler için ayrılmış havuz.
+                </p>
+
+                <div class="pool-info">
+
+                    <div>
+                        <span>Personel</span>
+                        <strong>Mehmet Kaya</strong>
+                    </div>
+
+                    <div>
+                        <span>Son Bakım</span>
+                        <strong>09.08.2026</strong>
+                    </div>
+
+                    <div>
+                        <span>Çalışma Saati</span>
+                        <strong>09:00 - 20:00</strong>
+                    </div>
+
+                </div>
+
+                <div class="card-buttons">
+
+                    <button class="secondary-btn"
+                            onclick="openPoolDetails('Çocuk Havuzu', 'Açık', 'Mehmet Kaya', '09.08.2026', '09:00 - 20:00')">
+                        Detayları Gör
+                    </button>
+
+                    <button class="warning-btn"
+                            onclick="openMaintenanceModal('Çocuk Havuzu')">
+                        🔧 Bakım Oluştur
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="pool-card" data-status="maintenance">
+
+                <div class="pool-card-top">
+                    <div class="pool-icon">🏊‍♀️</div>
+
+                    <span class="status status-maintenance">
+                        ● Bakımda
+                    </span>
+                </div>
+
+                <h3>Kapalı Havuz</h3>
+
+                <p class="pool-description">
+                    Kapalı alanda bulunan yüzme havuzu.
+                </p>
+
+                <div class="pool-info">
+
+                    <div>
+                        <span>Personel</span>
+                        <strong>Can Demir</strong>
+                    </div>
+
+                    <div>
+                        <span>Son Bakım</span>
+                        <strong>10.08.2026</strong>
+                    </div>
+
+                    <div>
+                        <span>Çalışma Saati</span>
+                        <strong>10:00 - 22:00</strong>
+                    </div>
+
+                </div>
+
+                <div class="card-buttons">
+
+                    <button class="secondary-btn"
+                            onclick="openPoolDetails('Kapalı Havuz', 'Bakımda', 'Can Demir', '10.08.2026', '10:00 - 22:00')">
+                        Detayları Gör
+                    </button>
+
+                    <button class="success-btn"
+                            onclick="finishMaintenance(this)">
+                        ✓ Bakımı Tamamla
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="section">
+
+        <div class="section-title">
+            <div>
+                <h2>👷 Havuz Personelleri</h2>
+                <p>Havuz personellerinin mevcut durumunu takip edin.</p>
+            </div>
+        </div>
+
+        <div class="staff-grid">
+
+            <div class="staff-card">
+                <div class="staff-avatar">AY</div>
+
+                <div class="staff-info">
+                    <h3>Ahmet Yılmaz</h3>
+                    <p>Havuz Görevlisi</p>
+                </div>
+
+                <span class="staff-status active">
+                    Aktif
+                </span>
+            </div>
+
+
+            <div class="staff-card">
+                <div class="staff-avatar">MK</div>
+
+                <div class="staff-info">
+                    <h3>Mehmet Kaya</h3>
+                    <p>Havuz Görevlisi</p>
+                </div>
+
+                <span class="staff-status active">
+                    Aktif
+                </span>
+            </div>
+
+
+            <div class="staff-card">
+                <div class="staff-avatar">CD</div>
+
+                <div class="staff-info">
+                    <h3>Can Demir</h3>
+                    <p>Teknik Personel</p>
+                </div>
+
+                <span class="staff-status busy">
+                    Görevde
+                </span>
+            </div>
+
+
+            <div class="staff-card">
+                <div class="staff-avatar">EY</div>
+
+                <div class="staff-info">
+                    <h3>Emre Yıldız</h3>
+                    <p>Havuz Görevlisi</p>
+                </div>
+
+                <span class="staff-status available">
+                    Müsait
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="section">
+
+        <div class="section-title">
+            <div>
+                <h2>🔧 Son Bakım Kayıtları</h2>
+                <p>Son oluşturulan havuz bakım işlemleri.</p>
+            </div>
+        </div>
+
+        <div class="maintenance-list" id="maintenanceList">
+
+            <div class="maintenance-row">
+
+                <div class="maintenance-icon">🔧</div>
+
+                <div class="maintenance-main">
+                    <strong>Kapalı Havuz</strong>
+                    <span>Filtre sistemi kontrolü</span>
+                </div>
+
+                <span class="priority high">
+                    Yüksek
+                </span>
+
+                <span class="maintenance-status">
+                    Devam Ediyor
+                </span>
+
+            </div>
+
+
+            <div class="maintenance-row">
+
+                <div class="maintenance-icon">🧹</div>
+
+                <div class="maintenance-main">
+                    <strong>Büyük Havuz</strong>
+                    <span>Genel temizlik</span>
+                </div>
+
+                <span class="priority normal">
+                    Normal
+                </span>
+
+                <span class="maintenance-status completed">
+                    Tamamlandı
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="modal-overlay" id="poolModal">
+
+    <div class="modal">
+
+        <div class="modal-header">
+            <div>
+                <h2 id="modalPoolName">Havuz</h2>
+                <p>Havuz detayları</p>
+            </div>
+
+            <button class="close-btn" onclick="closeModal('poolModal')">
+                ×
+            </button>
+        </div>
+
+        <div class="modal-details">
+
+            <div>
+                <span>Durum</span>
+                <strong id="modalStatus"></strong>
+            </div>
+
+            <div>
+                <span>Personel</span>
+                <strong id="modalStaff"></strong>
+            </div>
+
+            <div>
+                <span>Son Bakım</span>
+                <strong id="modalLastMaintenance"></strong>
+            </div>
+
+            <div>
+                <span>Çalışma Saati</span>
+                <strong id="modalHours"></strong>
+            </div>
+
+        </div>
+
+        <button class="secondary-btn full-btn"
+                onclick="closeModal('poolModal')">
+            Kapat
+        </button>
+
+    </div>
+
+</div>
+
+
+
+<div class="modal-overlay" id="maintenanceModal">
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <div>
+                <h2>🔧 Bakım Oluştur</h2>
+                <p>Havuz için yeni bakım kaydı oluşturun.</p>
+            </div>
+
+            <button class="close-btn"
+                    onclick="closeModal('maintenanceModal')">
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Havuz</label>
+
+            <select id="maintenancePool">
+                <option>Büyük Havuz</option>
+                <option>Çocuk Havuzu</option>
+                <option>Kapalı Havuz</option>
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Bakım Türü</label>
+
+            <select id="maintenanceType">
+                <option>Genel Temizlik</option>
+                <option>Teknik Arıza</option>
+                <option>Filtre Bakımı</option>
+                <option>Kimyasal Kontrol</option>
+                <option>Diğer</option>
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Öncelik</label>
+
+            <select id="maintenancePriority">
+                <option>Normal</option>
+                <option>Yüksek</option>
+                <option>Acil</option>
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label>Açıklama</label>
+
+            <textarea id="maintenanceDescription"
+                      placeholder="Bakım ile ilgili açıklama yazın..."></textarea>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button class="secondary-btn"
+                    onclick="closeModal('maintenanceModal')">
+                Vazgeç
+            </button>
+
+            <button class="primary-btn"
+                    onclick="createMaintenance()">
+                Bakım Kaydı Oluştur
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    function openPoolDetails(name, status, staff, maintenance, hours) {
+
+        document.getElementById("modalPoolName").textContent = name;
+        document.getElementById("modalStatus").textContent = status;
+        document.getElementById("modalStaff").textContent = staff;
+        document.getElementById("modalLastMaintenance").textContent = maintenance;
+        document.getElementById("modalHours").textContent = hours;
+
+        document.getElementById("poolModal").classList.add("show");
+    }
+
+
+    function openMaintenanceModal(poolName) {
+
+        if (poolName) {
+            document.getElementById("maintenancePool").value = poolName;
+        }
+
+        document.getElementById("maintenanceModal").classList.add("show");
+    }
+
+
+    function closeModal(id) {
+
+        document.getElementById(id).classList.remove("show");
+    }
+
+
+    function filterPools() {
+
+        const selected =
+            document.getElementById("poolFilter").value;
+
+        const cards =
+            document.querySelectorAll(".pool-card");
+
+        cards.forEach(card => {
+
+            const status =
+                card.getAttribute("data-status");
+
+            if (selected === "all" || selected === status) {
+                card.style.display = "block";
+            }
+            else {
+                card.style.display = "none";
+            }
+
+        });
+    }
+
+
+    function createMaintenance() {
+
+        const pool =
+            document.getElementById("maintenancePool").value;
+
+        const type =
+            document.getElementById("maintenanceType").value;
+
+        const priority =
+            document.getElementById("maintenancePriority").value;
+
+        const description =
+            document.getElementById("maintenanceDescription").value;
+
+        if (!description.trim()) {
+            alert("Lütfen bakım açıklaması girin.");
+            return;
+        }
+
+        const list =
+            document.getElementById("maintenanceList");
+
+        const row =
+            document.createElement("div");
+
+        row.className = "maintenance-row";
+
+        row.innerHTML = `
+            <div class="maintenance-icon">🔧</div>
+
+            <div class="maintenance-main">
+                <strong>${pool}</strong>
+                <span>${type} - ${description}</span>
+            </div>
+
+            <span class="priority ${priority === "Acil" || priority === "Yüksek" ? "high" : "normal"}">
+                ${priority}
+            </span>
+
+            <span class="maintenance-status">
+                Bekliyor
+            </span>
+        `;
+
+        list.prepend(row);
+
+        document.getElementById("maintenanceDescription").value = "";
+
+        closeModal("maintenanceModal");
+
+        alert("Bakım kaydı oluşturuldu.");
+    }
+
+
+    function finishMaintenance(button) {
+
+        const card = button.closest(".pool-card");
+
+        const status =
+            card.querySelector(".status");
+
+        status.textContent = "● Açık";
+
+        status.className =
+            "status status-open";
+
+        card.setAttribute("data-status", "open");
+
+        button.textContent = "🔧 Bakım Oluştur";
+
+        button.className = "warning-btn";
+
+        button.setAttribute(
+            "onclick",
+            "openMaintenanceModal('Kapalı Havuz')"
+        );
+
+        alert("Bakım tamamlandı. Havuz tekrar kullanıma açıldı.");
+
+        filterPools();
+    }
+
+
+    window.addEventListener("click", function(event) {
+
+        if (event.target.classList.contains("modal-overlay")) {
+            event.target.classList.remove("show");
+        }
+
+    });
+
+</script>
+

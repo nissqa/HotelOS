@@ -1,0 +1,837 @@
+﻿@model List<HotelOS.Models.Employee>
+
+@{
+    ViewData["Title"] = "Operasyon Raporları";
+
+    var employees = Model ?? new List<HotelOS.Models.Employee>();
+
+    var totalEmployees = ViewBag.TotalEmployees ?? 0;
+    var cleaningEmployees = ViewBag.CleaningEmployees ?? 0;
+    var maintenanceEmployees = ViewBag.MaintenanceEmployees ?? 0;
+    var poolEmployees = ViewBag.PoolEmployees ?? 0;
+
+    var positions =
+        ViewBag.Positions as List<string>
+        ?? new List<string>();
+
+    var selectedSearch = ViewBag.Search as string ?? "";
+    var selectedDepartment =
+        ViewBag.SelectedDepartment as string ?? "all";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
+
+    <title>Operasyon Raporları - HotelOS</title>
+
+    <link rel="stylesheet"
+          href="~/css/reports.css" />
+
+</head>
+
+<body>
+
+    <div class="reports-app">
+
+
+        <header class="topbar">
+
+            <div class="page-heading">
+
+                <div class="breadcrumb">
+                    HotelOS / BOİ Müdürlüğü / Raporlar
+                </div>
+
+                <h1>Operasyon Raporları</h1>
+
+                <p>
+                    Personellerin gerçekleştirdiği operasyonları ve görev geçmişlerini görüntüleyin.
+                </p>
+
+            </div>
+
+            <div class="topbar-actions">
+
+                <a href="/BOI"
+                   class="dashboard-btn">
+                    ← Dashboard'a Dön
+                </a>
+
+                <div class="top-user">
+
+                    <div class="top-avatar">
+                        B
+                    </div>
+
+                    <div>
+                        <strong>BOİ Müdürü</strong>
+                        <small>Operasyon Müdürü</small>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <section class="stats-grid">
+
+          
+
+            <a href="@Url.Action("Index", "BOIReports")"
+               class="stat-card stat-button">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Tüm Personeller
+                    </span>
+
+                    <div class="stat-icon blue">
+                        👥
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    @totalEmployees
+                </div>
+
+                <div class="stat-description">
+                    Raporlarda bulunan personeller
+                </div>
+
+            </a>
+
+
+            <a href="@Url.Action("Index", "BOIReports", new { department = "Temizlik Personeli" })"
+               class="stat-card stat-button">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Temizlik
+                    </span>
+
+                    <div class="stat-icon green">
+                        🧹
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    @cleaningEmployees
+                </div>
+
+                <div class="stat-description">
+                    Temizlik personeli
+                </div>
+
+            </a>
+
+
+
+            <a href="@Url.Action("Index", "BOIReports", new { department = "Teknik Personel" })"
+               class="stat-card stat-button">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Bakım
+                    </span>
+
+                    <div class="stat-icon orange">
+                        🔧
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    @maintenanceEmployees
+                </div>
+
+                <div class="stat-description">
+                    Teknik ve bakım personeli
+                </div>
+
+            </a>
+
+
+
+            <a href="@Url.Action("Index", "BOIReports", new { department = "Havuz Görevlisi" })"
+               class="stat-card stat-button">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Havuz
+                    </span>
+
+                    <div class="stat-icon cyan">
+                        🏊
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    @poolEmployees
+                </div>
+
+                <div class="stat-description">
+                    Havuz görevlileri
+                </div>
+
+            </a>
+
+        </section>
+
+    
+
+        <section class="panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <h2>Personel Raporları</h2>
+
+                    <p>
+                        Personel seçerek gerçekleştirdiği görevleri ve operasyonları görüntüleyin.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <form method="get"
+                  action="@Url.Action("Index", "BOIReports")"
+                  class="filters">
+
+                <div class="search-box">
+
+                    <span>🔍</span>
+
+                    <input type="text"
+                           name="search"
+                           value="@selectedSearch"
+                           placeholder="Personel adı veya soyadı ara..." />
+
+                </div>
+
+
+                <select name="department">
+
+                    <option value="all">
+                        Tüm Departmanlar
+                    </option>
+
+                    @foreach (var position in positions)
+                    {
+                        if (selectedDepartment == position)
+                        {
+                            <option value="@position"
+                                    selected>
+                                @position
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@position">
+                                @position
+                            </option>
+                        }
+                    }
+
+                </select>
+
+
+                <button type="submit"
+                        class="filter-btn">
+
+                    Filtrele
+
+                </button>
+
+
+                <a href="@Url.Action("Index", "BOIReports")"
+                   class="clear-btn">
+
+                    Temizle
+
+                </a>
+
+            </form>
+
+
+
+            <div class="reports-list">
+
+                @if (employees.Any())
+                {
+
+                    foreach (var employee in employees)
+                    {
+
+                        var fullName =
+                        $"{employee.FirstName} {employee.LastName}";
+
+                        var firstLetter =
+                        string.IsNullOrWhiteSpace(employee.FirstName)
+                        ? "P"
+                        : employee.FirstName
+                        .Substring(0, 1)
+                        .ToUpper();
+
+                        <div class="report-person">
+
+                            
+
+                            <div class="person-info">
+
+                                <div class="person-avatar">
+                                    @firstLetter
+                                </div>
+
+                                <div class="person-text">
+
+                                    <strong>
+                                        @fullName
+                                    </strong>
+
+                                    <span>
+                                        @(string.IsNullOrWhiteSpace(employee.Position)
+                                                                        ? "Pozisyon belirtilmemiş"
+                                                                        : employee.Position)
+                            </span>
+
+                                </div>
+
+                            </div>
+
+
+                        
+
+                            <div class="person-status">
+
+                                <span class="status-dot"></span>
+
+                                @(employee.Status ?? "Bilinmiyor")
+
+                            </div>
+
+
+                           
+
+                            <button type="button"
+                                    class="report-detail-btn"
+                                    onclick="showReport(
+                                                '@employee.Id',
+                                                '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(fullName))',
+                                                '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.Position ?? "-"))'
+                                            )">
+
+                                Raporu Gör →
+
+                            </button>
+
+                        </div>
+
+                                }
+
+                }
+                else
+                {
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            📊
+                        </div>
+
+                        <h3>
+                            Personel bulunamadı
+                        </h3>
+
+                        <p>
+                            Seçtiğiniz filtrelere uygun personel bulunmuyor.
+                        </p>
+
+                    </div>
+
+                }
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+
+    <div id="reportModal"
+         class="modal-overlay"
+         onclick="closeReportOutside(event)">
+
+        <div class="report-modal">
+
+         
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2 id="modalName">
+                        Personel
+                    </h2>
+
+                    <p id="modalPosition">
+                        -
+                    </p>
+
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeReport()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="report-summary">
+
+                <div class="summary-card">
+
+                    <span>
+                        Toplam Görev
+                    </span>
+
+                    <strong id="totalTaskCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <span>
+                        Tamamlanan
+                    </span>
+
+                    <strong id="completedTaskCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-card">
+
+                    <span>
+                        Bugünkü Görev
+                    </span>
+
+                    <strong id="todayTaskCount">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="task-history">
+
+                <div class="history-header">
+
+                    <div>
+
+                        <h3>
+                            Görev Geçmişi
+                        </h3>
+
+                        <p>
+                            Personelin gerçekleştirdiği operasyonlar
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+               
+
+                <div id="taskHistoryList">
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            📋
+                        </div>
+
+                        <h3>
+                            Personel seçilmedi
+                        </h3>
+
+                        <p>
+                            Görev geçmişini görmek için raporu görüntüleyin.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="cancel-btn"
+                        onclick="closeReport()">
+
+                    Kapat
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+
+        async function showReport(id, name, position) {
+
+            document.getElementById("modalName").textContent = name;
+
+            document.getElementById("modalPosition").textContent = position;
+
+            document.getElementById("reportModal")
+                .classList.add("show");
+
+
+      
+
+            document.getElementById("totalTaskCount")
+                .textContent = "0";
+
+            document.getElementById("completedTaskCount")
+                .textContent = "0";
+
+            document.getElementById("todayTaskCount")
+                .textContent = "0";
+
+
+           
+
+            const taskList =
+                document.getElementById("taskHistoryList");
+
+
+            taskList.innerHTML = `
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        ⏳
+                    </div>
+
+                    <h3>
+                        Görevler yükleniyor...
+                    </h3>
+
+                    <p>
+                        Personelin görev geçmişi getiriliyor.
+                    </p>
+
+                </div>
+
+            `;
+
+
+            try {
+
+
+                const response =
+                    await fetch(
+                        `/BOIReports/EmployeeTasks?id=${id}`
+                    );
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Görevler alınamadı."
+                    );
+
+                }
+
+
+                const data =
+                    await response.json();
+
+
+
+                document.getElementById("totalTaskCount")
+                    .textContent =
+                    data.totalTasks ?? 0;
+
+
+                document.getElementById("completedTaskCount")
+                    .textContent =
+                    data.completedTasks ?? 0;
+
+
+                document.getElementById("todayTaskCount")
+                    .textContent =
+                    data.todayTasks ?? 0;
+
+
+                if (
+                    !data.tasks ||
+                    data.tasks.length === 0
+                ) {
+
+                    taskList.innerHTML = `
+
+                        <div class="empty-state">
+
+                            <div class="empty-icon">
+                                📋
+                            </div>
+
+                            <h3>
+                                Görev bulunamadı
+                            </h3>
+
+                            <p>
+                                Bu personelin kayıtlı bir görevi bulunmuyor.
+                            </p>
+
+                        </div>
+
+                    `;
+
+                    return;
+                }
+
+
+
+                taskList.innerHTML = "";
+
+
+
+                data.tasks.forEach(task => {
+
+                    const isCleaning =
+                        task.type === "Temizlik";
+
+
+                    const icon =
+                        isCleaning
+                            ? "🧹"
+                            : "🔧";
+
+
+                    const iconClass =
+                        isCleaning
+                            ? "cleaning"
+                            : "maintenance";
+
+
+                    let dateText = "-";
+
+
+                    if (task.date) {
+
+                        const date =
+                            new Date(task.date);
+
+
+                        if (!isNaN(date.getTime())) {
+
+                            dateText =
+                                date.toLocaleDateString(
+                                    "tr-TR",
+                                    {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric"
+                                    }
+                                );
+
+                        }
+
+                    }
+
+
+                    const item =
+                        document.createElement("div");
+
+
+                    item.className =
+                        "task-item";
+
+
+                    item.innerHTML = `
+
+                        <div class="task-icon ${iconClass}">
+                            ${icon}
+                        </div>
+
+                        <div class="task-info">
+
+                            <strong>
+                                ${escapeHtml(
+                                    task.title || "Görev"
+                                )}
+                            </strong>
+
+                            <span>
+
+                                ${escapeHtml(
+                                    task.room || "-"
+                                )}
+
+                                ${
+                                    task.status
+                                        ? " • " +
+                                          escapeHtml(task.status)
+                                        : ""
+                                }
+
+                            </span>
+
+                        </div>
+
+                        <div class="task-date">
+                            ${dateText}
+                        </div>
+
+                    `;
+
+
+                    taskList.appendChild(item);
+
+                });
+
+            }
+            catch (error) {
+
+                console.error(
+                    "BOI RAPOR HATASI:",
+                    error
+                );
+
+
+                taskList.innerHTML = `
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            ⚠️
+                        </div>
+
+                        <h3>
+                            Görevler yüklenemedi
+                        </h3>
+
+                        <p>
+                            Görev geçmişi alınırken bir hata oluştu.
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+
+        function escapeHtml(value) {
+
+            if (
+                value === null ||
+                value === undefined
+            ) {
+
+                return "";
+
+            }
+
+
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+
+        }
+
+
+
+        function closeReport() {
+
+            document.getElementById("reportModal")
+                .classList.remove("show");
+
+        }
+
+
+
+        function closeReportOutside(event) {
+
+            if (
+                event.target.id === "reportModal"
+            ) {
+
+                closeReport();
+
+            }
+
+        }
+
+
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Escape") {
+
+                    closeReport();
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,566 @@
+﻿@{
+    ViewData["Title"] = "Receptionist HotelOS";
+}
+
+<!DOCTYPE html>
+
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    ```
+    <title>Receptionist - HotelOS</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f7fb;
+            color: #1e293b;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #172554;
+            color: white;
+            padding: 25px 16px;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 23px;
+            font-weight: 700;
+            margin-bottom: 35px;
+        }
+
+            .logo span {
+                display: block;
+                font-size: 12px;
+                font-weight: 400;
+                color: #bfdbfe;
+                margin-top: 5px;
+            }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .menu-title {
+            color: #93c5fd;
+            font-size: 11px;
+            font-weight: bold;
+            margin: 15px 10px 5px;
+            text-transform: uppercase;
+        }
+
+        .menu a {
+            color: #e2e8f0;
+            text-decoration: none;
+            padding: 13px 14px;
+            border-radius: 10px;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+            .menu a:hover,
+            .menu a.active {
+                background: #2563eb;
+                color: white;
+            }
+
+        .logout {
+            position: absolute;
+            bottom: 25px;
+            left: 16px;
+            right: 16px;
+        }
+
+            .logout a {
+                display: block;
+                text-align: center;
+                padding: 12px;
+                border-radius: 10px;
+                background: #1e3a8a;
+                color: white;
+                text-decoration: none;
+            }
+
+                .logout a:hover {
+                    background: #dc2626;
+                }
+
+        .content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            padding: 30px 35px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+            .header h1 {
+                color: #172554;
+                font-size: 28px;
+                margin-bottom: 5px;
+            }
+
+            .header p {
+                color: #64748b;
+                font-size: 14px;
+            }
+
+        .user-box {
+            background: white;
+            padding: 11px 17px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border-left: 4px solid #2563eb;
+            text-decoration: none;
+            display: block;
+            transition: 0.2s;
+        }
+
+            .card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+            }
+
+        .card-icon {
+            font-size: 27px;
+            margin-bottom: 13px;
+        }
+
+        .card-title {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 7px;
+        }
+
+        .card-number {
+            color: #172554;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+            .panel-header h2 {
+                color: #172554;
+                font-size: 18px;
+            }
+
+        .view-all {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .reservation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e2e8f0;
+            text-decoration: none;
+            color: inherit;
+        }
+
+            .reservation:last-child {
+                border-bottom: none;
+            }
+
+        .guest-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: #1d4ed8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .guest-name {
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .guest-room {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .status {
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-in {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-out {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status-wait {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .quick-btn {
+            padding: 18px 10px;
+            border: none;
+            border-radius: 12px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+            .quick-btn:hover {
+                background: #dbeafe;
+                transform: translateY(-2px);
+            }
+
+            .quick-btn span {
+                display: block;
+                font-size: 25px;
+                margin-bottom: 7px;
+            }
+
+        @@media (max-width: 1100px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 700px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .content {
+                margin-left: 200px;
+                width: calc(100% - 200px);
+                padding: 20px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    ```
+
+</head>
+
+<body>
+
+    ```
+    <div class="layout">
+
+        <aside class="sidebar">
+
+            <div class="logo">
+                🏨 HotelOS
+                <span>Receptionist Panel</span>
+            </div>
+
+            <div class="menu">
+
+                <div class="menu-title">Menü</div>
+
+                <a href="/Reception" class="active">
+                    🏠 &nbsp; Ana Sayfa
+                </a>
+
+                <a href="/ReservationsView">
+                    📅 &nbsp; Rezervasyonlar
+                </a>
+
+                <a href="/CustomerPanel">
+                    👥 &nbsp; Müşteriler
+                </a>
+
+                <a href="/RoomsView">
+                    🛏️ &nbsp; Odalar
+                </a>
+
+                <div class="menu-title">Konaklama</div>
+
+                <a href="/CheckIn">
+                    🚪 &nbsp; Check-in
+                </a>
+
+                <a href="/CheckOut">
+                    🚶 &nbsp; Check-out
+                </a>
+
+                <div class="menu-title">Finans</div>
+
+                <a href="/PaymentPanel">
+                    💳 &nbsp; Ödemeler
+                </a>
+
+                <a href="/InvoicePanel">
+                    🧾 &nbsp; Faturalar
+                </a>
+
+            </div>
+
+            <div class="logout">
+                <a href="/Login">
+                    🚪 Çıkış Yap
+                </a>
+            </div>
+
+        </aside>
+
+        <main class="content">
+
+            <div class="header">
+
+                <div>
+                    <h1>Günaydın 👋</h1>
+
+                    <p>
+                        Receptionist paneline hoş geldiniz.
+                        Bugünkü işlemlere buradan ulaşabilirsiniz.
+                    </p>
+                </div>
+
+                <div class="user-box">
+                    👤 Resepsiyonist
+                </div>
+
+            </div>
+
+            <div class="cards">
+
+                <a href="/ReservationsView" class="card">
+                    <div class="card-icon">📅</div>
+                    <div class="card-title">Bugünkü Rezervasyonlar</div>
+                    <div class="card-number">@ViewBag.TodayReservations</div>
+                </a>
+
+                <a href="/CheckIn" class="card">
+                    <div class="card-icon">🚪</div>
+                    <div class="card-title">Bugünkü Check-in</div>
+                    <div class="card-number">@ViewBag.PendingCheckIns</div>
+                </a>
+
+                <a href="/CheckOut" class="card">
+                    <div class="card-icon">🚶</div>
+                    <div class="card-title">Bugünkü Check-out</div>
+                    <div class="card-number">@ViewBag.CompletedCheckIns</div>
+                </a>
+
+                <a href="/RoomsView" class="card">
+                    <div class="card-icon">🛏️</div>
+                    <div class="card-title">Boş Odalar</div>
+                    <div class="card-number">@ViewBag.AvailableRooms</div>
+                </a>
+
+            </div>
+
+            <div class="dashboard-grid">
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <h2>
+                            📅 Bugünkü Rezervasyonlar
+                        </h2>
+
+                        <a href="/ReservationsView" class="view-all">
+                            Tümünü Gör →
+                        </a>
+
+                    </div>
+
+
+
+                    @foreach (var reservation in ViewBag.TodayList)
+                    {
+                        <a href="@(reservation.Status == "CheckedIn" ? "/CheckOut" : "/CheckIn")" class="reservation">
+
+                            <div class="guest-info">
+
+                                <div class="avatar">
+                                    @reservation.Customer.FirstName.Substring(0, 1)@reservation.Customer.LastName.Substring(0, 1)
+                                </div>
+
+                                <div>
+
+                                    <div class="guest-name">
+                                        @reservation.Customer.FirstName @reservation.Customer.LastName
+                                    </div>
+
+                                    <div class="guest-room">
+                                        Oda @reservation.Room.RoomNumber • @reservation.AdultCount Yetişkin
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            @if (reservation.Status == "CheckedIn")
+                            {
+                                <span class="status status-out">
+                                    Check-out Bekliyor
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status status-in">
+                                    Check-in Bekliyor
+                                </span>
+                            }
+
+                        </a>
+                    }
+
+
+
+
+                </div>
+
+                <div class="panel">
+
+                    <div class="panel-header">
+
+                        <h2>
+                            ⚡ Hızlı İşlemler
+                        </h2>
+
+                    </div>
+
+                    <div class="quick-actions">
+
+                        <a href="/ReservationCreate" class="quick-btn">
+                            <span>📅</span>
+                            Yeni Rezervasyon
+                        </a>
+
+                        <a href="/CheckIn" class="quick-btn">
+                            <span>🚪</span>
+                            Check-in
+                        </a>
+
+                        <a href="/CheckOut" class="quick-btn">
+                            <span>🚶</span>
+                            Check-out
+                        </a>
+
+                        <a href="/CustomerPanel" class="quick-btn">
+                            <span>👥</span>
+                            Müşteri Ara
+                        </a>
+
+                        <a href="/PaymentPanel/Create" class="quick-btn">
+                            <span>💳</span>
+                            Ödeme Al
+                        </a>
+
+                        <a href="/InvoicePanel/Create" class="quick-btn">
+                            <span>🧾</span>
+                            Fatura Oluştur
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+    ```
+
+</body>
+</html>

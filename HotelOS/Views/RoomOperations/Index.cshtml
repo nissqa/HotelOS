@@ -1,0 +1,610 @@
+﻿@model IEnumerable<HotelOS.Models.Room>
+
+@{
+    ViewData["Title"] = "Oda Operasyonları";
+
+
+var total = Model.Count();
+    var available = Model.Count(x => x.Status == HotelOS.Models.Enums.RoomStatus.Available);
+    var occupied = Model.Count(x => x.Status == HotelOS.Models.Enums.RoomStatus.Occupied);
+    var cleaning = Model.Count(x => x.Status == HotelOS.Models.Enums.RoomStatus.Cleaning);
+    var maintenance = Model.Count(x => x.Status == HotelOS.Models.Enums.RoomStatus.Maintenance);
+
+
+}
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        background: #f5f7fb;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: #1f2937;
+    }
+
+    .operations-page {
+        min-height: 100vh;
+        padding: 34px 42px 50px;
+    }
+
+    .header {
+        margin-bottom: 28px;
+    }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 750;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #7b8494;
+            font-size: 14px;
+        }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .stat {
+        background: white;
+        border: 1px solid #edf0f5;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 5px 18px rgba(20, 30, 50, .04);
+    }
+
+    .stat-label {
+        color: #8a93a2;
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    .stat-number {
+        font-size: 25px;
+        font-weight: 750;
+    }
+
+    .toolbar {
+        display: flex;
+        gap: 12px;
+        background: white;
+        border: 1px solid #edf0f5;
+        padding: 15px;
+        border-radius: 16px;
+        margin-bottom: 25px;
+    }
+
+    .search {
+        flex: 1;
+    }
+
+        .search input,
+        .toolbar select {
+            width: 100%;
+            height: 43px;
+            border: 1px solid #e3e7ee;
+            border-radius: 10px;
+            padding: 0 13px;
+            outline: none;
+            background: white;
+            font-size: 14px;
+        }
+
+    .toolbar select {
+        width: 180px;
+        cursor: pointer;
+    }
+
+    .rooms {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    .room-card {
+        background: white;
+        border-radius: 18px;
+        padding: 21px;
+        border: 1px solid #edf0f5;
+        box-shadow: 0 5px 20px rgba(20, 30, 50, .04);
+        transition: .2s;
+    }
+
+        .room-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(20, 30, 50, .08);
+        }
+
+        .room-card.available {
+            border-top: 4px solid #22c55e;
+        }
+
+        .room-card.occupied {
+            border-top: 4px solid #3b82f6;
+        }
+
+        .room-card.cleaning {
+            border-top: 4px solid #f59e0b;
+        }
+
+        .room-card.maintenance {
+            border-top: 4px solid #ef4444;
+        }
+
+    .room-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .room-number {
+        font-size: 24px;
+        font-weight: 750;
+    }
+
+    .room-type {
+        margin-top: 12px;
+        color: #6658d9;
+        font-weight: 650;
+    }
+
+    .room-info {
+        display: flex;
+        gap: 16px;
+        margin-top: 9px;
+        color: #7b8494;
+        font-size: 13px;
+    }
+
+    .status {
+        padding: 6px 10px;
+        border-radius: 30px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+        .status.available {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status.occupied {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status.cleaning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status.maintenance {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    .task-area {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #f0f2f5;
+    }
+
+    .task-message {
+        padding: 12px;
+        border-radius: 11px;
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+        .task-message.maintenance-message {
+            background: #fff5f5;
+            border: 1px solid #fee2e2;
+            color: #991b1b;
+        }
+
+        .task-message.cleaning-message {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #92400e;
+        }
+
+        .task-message strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+    .buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+    }
+
+    .btn {
+        height: 42px;
+        border-radius: 10px;
+        border: 1px solid #e3e7ee;
+        background: white;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 650;
+        transition: .2s;
+    }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+    .maintenance-btn {
+        color: #dc2626;
+        background: #fff7f7;
+        border-color: #fecaca;
+    }
+
+        .maintenance-btn:hover {
+            background: #fee2e2;
+        }
+
+    .cleaning-btn {
+        color: #b45309;
+        background: #fffbeb;
+        border-color: #fde68a;
+    }
+
+        .cleaning-btn:hover {
+            background: #fef3c7;
+        }
+
+    .complete-btn {
+        grid-column: 1 / -1;
+        color: #15803d;
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+    }
+
+        .complete-btn:hover {
+            background: #dcfce7;
+        }
+
+    .detail-btn {
+        color: #5b4be7;
+        background: #f8f7ff;
+        border-color: #ddd6fe;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .empty {
+        grid-column: 1 / -1;
+        background: white;
+        border-radius: 18px;
+        padding: 70px;
+        text-align: center;
+        color: #7b8494;
+    }
+
+    .empty-icon {
+        font-size: 50px;
+        margin-bottom: 10px;
+    }
+
+    @@media (max-width: 1100px) {
+        .stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .rooms {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 750px) {
+        .operations-page {
+            padding: 24px 18px;
+        }
+
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .rooms {
+            grid-template-columns: 1fr;
+        }
+
+        .toolbar {
+            flex-direction: column;
+        }
+
+            .toolbar select {
+                width: 100%;
+            }
+    }
+</style>
+
+<div class="operations-page">
+
+    ```
+    <div class="header">
+        <h1>🏨 Oda Operasyonları</h1>
+        <p>Odaların bakım ve temizlik işlemlerini buradan yönetin.</p>
+    </div>
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="stat-label">Toplam Oda</div>
+            <div class="stat-number">@total</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">🟢 Müsait</div>
+            <div class="stat-number">@available</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">🔵 Dolu</div>
+            <div class="stat-number">@occupied</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">🧹 Temizlik</div>
+            <div class="stat-number">@cleaning</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">🔧 Bakım</div>
+            <div class="stat-number">@maintenance</div>
+        </div>
+
+    </div>
+
+    <div class="toolbar">
+
+        <div class="search">
+            <input id="roomSearch"
+                   type="text"
+                   placeholder="🔍 Oda numarası ara..."
+                   onkeyup="filterRooms()" />
+        </div>
+
+        <select id="statusFilter"
+                onchange="filterRooms()">
+
+            <option value="">Tüm Durumlar</option>
+            <option value="Available">Müsait</option>
+            <option value="Occupied">Dolu</option>
+            <option value="Cleaning">Temizlik</option>
+            <option value="Maintenance">Bakım</option>
+
+        </select>
+
+    </div>
+
+    <div class="rooms">
+
+        @if (!Model.Any())
+        {
+            <div class="empty">
+                <div class="empty-icon">🏨</div>
+                <h2>Oda bulunamadı</h2>
+                <p>Sistemde kayıtlı oda bulunmuyor.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var room in Model)
+            {
+                var status = room.Status.ToString();
+
+                var statusText = room.Status switch
+                {
+                    HotelOS.Models.Enums.RoomStatus.Available => "MÜSAİT",
+                    HotelOS.Models.Enums.RoomStatus.Occupied => "DOLU",
+                    HotelOS.Models.Enums.RoomStatus.Cleaning => "TEMİZLİK",
+                    HotelOS.Models.Enums.RoomStatus.Maintenance => "BAKIM",
+                    HotelOS.Models.Enums.RoomStatus.OutOfService => "KULLANIM DIŞI",
+                    _ => "BİLİNMİYOR"
+                };
+
+                <div class="room-card @status.ToLower()"
+                     data-number="@room.RoomNumber"
+                     data-status="@status">
+
+                    <div class="room-top">
+
+                        <div class="room-number">
+                            Oda @room.RoomNumber
+                        </div>
+
+                        <span class="status @status.ToLower()">
+                            @statusText
+                        </span>
+
+                    </div>
+
+                    <div class="room-type">
+                        @(room.RoomType?.TypeName ?? "Oda tipi belirtilmemiş")
+                    </div>
+
+                    <div class="room-info">
+                        <span>🏢 @room.Floor. Kat</span>
+                        <span>👥 @(room.RoomType?.Capacity ?? 0) kişi</span>
+                    </div>
+
+                    <div class="task-area">
+
+                        @if (room.Status == HotelOS.Models.Enums.RoomStatus.Maintenance)
+                        {
+                            <div class="task-message maintenance-message">
+                                <strong>🔧 Bakım gerekiyor</strong>
+                                Bu oda bakım personelinin işlemi tamamlamasını bekliyor.
+                            </div>
+
+                            <div class="buttons">
+
+                                <button class="btn complete-btn"
+                                        onclick="completeTask(@room.Id, 'maintenance')">
+                                    ✓ Bakımı Tamamlandı
+                                </button>
+
+                                <a class="btn detail-btn"
+                                   href="/RoomDetails?id=@room.Id">
+                                    👁 Oda Detayı
+                                </a>
+
+                            </div>
+                        }
+                        else if (room.Status == HotelOS.Models.Enums.RoomStatus.Cleaning)
+                        {
+                            <div class="task-message cleaning-message">
+                                <strong>🧹 Temizlik gerekiyor</strong>
+                                Bu oda temizlik personelinin işlemi tamamlamasını bekliyor.
+                            </div>
+
+                            <div class="buttons">
+
+                                <button class="btn complete-btn"
+                                        onclick="completeTask(@room.Id, 'cleaning')">
+                                    ✓ Temizlik Tamamlandı
+                                </button>
+
+                                <a class="btn detail-btn"
+                                   href="/RoomDetails?id=@room.Id">
+                                    👁 Oda Detayı
+                                </a>
+
+                            </div>
+                        }
+                        else if (room.Status == HotelOS.Models.Enums.RoomStatus.Available)
+                        {
+                            <div class="buttons">
+
+                                <button class="btn maintenance-btn"
+                                        onclick="openTask(@room.Id, '@room.RoomNumber', 'maintenance')">
+                                    🔧 Bakım Gerekiyor
+                                </button>
+
+                                <button class="btn cleaning-btn"
+                                        onclick="openTask(@room.Id, '@room.RoomNumber', 'cleaning')">
+                                    🧹 Temizlik Gerekiyor
+                                </button>
+
+                                <a class="btn detail-btn"
+                                   href="/RoomDetails?id=@room.Id">
+                                    👁 Oda Detayı
+                                </a>
+
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="buttons">
+
+                                <a class="btn detail-btn"
+                                   href="/RoomDetails?id=@room.Id">
+                                    👁 Oda Detayı
+                                </a>
+
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+            }
+        }
+
+    </div>
+    ```
+
+</div>
+
+<script>
+
+    function filterRooms() {
+
+        const search =
+            document.getElementById("roomSearch")
+                .value
+                .toLowerCase();
+
+        const status =
+            document.getElementById("statusFilter")
+                .value;
+
+        document
+            .querySelectorAll(".room-card")
+            .forEach(card => {
+
+                const number =
+                    card.dataset.number.toLowerCase();
+
+                const cardStatus =
+                    card.dataset.status;
+
+                const matchesSearch =
+                    number.includes(search);
+
+                const matchesStatus =
+                    status === "" ||
+                    cardStatus === status;
+
+                card.style.display =
+                    matchesSearch && matchesStatus
+                        ? ""
+                        : "none";
+            });
+    }
+
+    function openTask(roomId, roomNumber, type) {
+
+        const taskName =
+            type === "maintenance"
+                ? "BAKIM"
+                : "TEMİZLİK";
+
+        const message =
+            roomNumber +
+            " numaralı oda için " +
+            taskName +
+            " görevi oluşturulacak.";
+
+        if (confirm(message)) {
+
+            alert(
+                "Görev ekranı hazır. " +
+                "Bir sonraki adımda bu işlem veritabanına bağlanacak."
+            );
+        }
+    }
+
+    function completeTask(roomId, type) {
+
+        const taskName =
+            type === "maintenance"
+                ? "bakım"
+                : "temizlik";
+
+        if (!confirm(
+            "Bu " + taskName +
+            " görevi tamamlandı olarak işaretlensin mi?"
+        )) {
+            return;
+        }
+
+        alert(
+            "Tamamlandı işlemi bir sonraki adımda " +
+            "veritabanına bağlanacak."
+        );
+    }
+
+</script>

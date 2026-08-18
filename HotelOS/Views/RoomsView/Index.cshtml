@@ -1,0 +1,984 @@
+﻿@model IEnumerable<HotelOS.Models.Room>
+
+@{
+    ViewData["Title"] = "Odalar";
+}
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        background: #f6f7fb;
+        font-family: "Segoe UI", sans-serif;
+        color: #1f2937;
+    }
+
+    .rooms-page {
+        padding: 35px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 20px;
+    }
+
+    .title-area h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .title-area p {
+        margin-top: 8px;
+        color: #6b7280;
+    }
+
+    .add-room-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 18px;
+        border-radius: 10px;
+        background: #6d5dfc;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 5px 15px rgba(109, 93, 252, .20);
+        transition: all .2s ease;
+        white-space: nowrap;
+    }
+
+        .add-room-btn:hover {
+            background: #5848e8;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(109, 93, 252, .25);
+        }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 25px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, .05);
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all .2s ease;
+        user-select: none;
+    }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .09);
+        }
+
+        .summary-card.active-card {
+            border-color: #6d5dfc;
+            box-shadow: 0 0 0 4px rgba(109, 93, 252, .10);
+        }
+
+    .summary-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+        background: #eeeafd;
+        flex-shrink: 0;
+    }
+
+    .summary-card span {
+        display: block;
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+
+    .summary-card strong {
+        font-size: 25px;
+    }
+
+    .toolbar {
+        background: white;
+        border-radius: 16px;
+        padding: 18px;
+        display: flex;
+        gap: 12px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, .04);
+    }
+
+    .search {
+        flex: 1;
+        position: relative;
+    }
+
+        .search span {
+            position: absolute;
+            left: 14px;
+            top: 11px;
+        }
+
+        .search input {
+            width: 100%;
+            padding: 11px 15px 11px 40px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            outline: none;
+            transition: .2s;
+        }
+
+            .search input:focus,
+            .toolbar select:focus {
+                border-color: #6d5dfc;
+                box-shadow: 0 0 0 3px rgba(109, 93, 252, .10);
+            }
+
+    .toolbar select {
+        padding: 11px 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: white;
+        outline: none;
+        min-width: 170px;
+    }
+
+    .rooms-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .room-card {
+        background: white;
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, .05);
+        transition: .2s;
+    }
+
+        .room-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
+        }
+
+    .room-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .room-number {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .status {
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .available {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .occupied {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .cleaning {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .maintenance {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .outofservice {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .room-type {
+        margin-top: 16px;
+        color: #6d5dfc;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .room-details {
+        display: flex;
+        gap: 18px;
+        margin-top: 14px;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .price {
+        margin-top: 20px;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 16px;
+    }
+
+        .price strong {
+            font-size: 23px;
+        }
+
+        .price span {
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+        align-items: stretch;
+    }
+
+    .action-btn,
+    .activate-form {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .action-btn {
+        min-height: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 10px 8px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #374151;
+        text-decoration: none;
+        cursor: pointer;
+        font-family: "Segoe UI", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all .2s ease;
+        white-space: nowrap;
+    }
+
+    .activate-form {
+        margin: 0;
+        padding: 0;
+        display: flex;
+    }
+
+    .activate-btn {
+        width: 100%;
+        height: 42px;
+        min-height: 42px;
+        background: #ecfdf5;
+        color: #15803d;
+        border-color: #bbf7d0;
+    }
+
+    .detail-btn:hover,
+    .edit-btn:hover {
+        background: #f5f3ff;
+        border-color: #c4b5fd;
+        color: #5b4be7;
+        transform: translateY(-1px);
+    }
+
+    .out-btn:hover {
+        background: #fff1f2;
+        border-color: #fda4af;
+        color: #dc2626;
+        transform: translateY(-1px);
+    }
+
+    .activate-btn:hover {
+        background: #dcfce7;
+        border-color: #86efac;
+        color: #166534;
+        transform: translateY(-1px);
+    }
+
+    .empty {
+        grid-column: 1 / -1;
+        background: white;
+        padding: 60px;
+        border-radius: 18px;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .empty-icon {
+        font-size: 50px;
+        margin-bottom: 15px;
+    }
+
+    .filter-info {
+        display: none;
+        background: #f5f3ff;
+        border: 1px solid #ddd6fe;
+        color: #5b4be7;
+        padding: 11px 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+        .filter-info.show {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+    .clear-filter {
+        border: none;
+        background: white;
+        color: #5b4be7;
+        border-radius: 7px;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+        .clear-filter:hover {
+            background: #ede9fe;
+        }
+
+    @@media (max-width: 1100px) {
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .rooms-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 800px) {
+        .page-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .add-room-btn {
+            width: 100%;
+        }
+
+        .actions {
+            flex-wrap: wrap;
+        }
+
+        .action-btn,
+        .activate-form {
+            min-width: calc(50% - 5px);
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .rooms-page {
+            padding: 20px;
+        }
+
+        .summary-grid,
+        .rooms-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .toolbar {
+            flex-direction: column;
+        }
+
+            .toolbar select {
+                width: 100%;
+            }
+
+        .actions {
+            flex-direction: column;
+        }
+
+        .action-btn,
+        .activate-form {
+            width: 100%;
+            min-width: 100%;
+        }
+    }
+</style>
+
+<div class="rooms-page">
+
+    <div class="page-header">
+
+        <div class="title-area">
+
+            <h1>🛏️ Odalar</h1>
+
+            <p>
+                Otel odalarını ve konaklama durumlarını görüntüleyin.
+            </p>
+
+        </div>
+
+        <a href="/RoomCreate" class="add-room-btn">
+            ➕ Yeni Oda Ekle
+        </a>
+
+    </div>
+
+
+    <div class="summary-grid">
+
+        <div class="summary-card active-card"
+             data-filter=""
+             onclick="selectSummaryFilter(this, '')">
+
+            <div class="summary-icon">
+                🏨
+            </div>
+
+            <div>
+                <span>Toplam Oda</span>
+
+                <strong>
+                    @Model.Count()
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="summary-card"
+             data-filter="Available"
+             onclick="selectSummaryFilter(this, 'Available')">
+
+            <div class="summary-icon">
+                ✓
+            </div>
+
+            <div>
+                <span>Müsait</span>
+
+                <strong>
+                    @Model.Count(r =>
+                    r.Status == HotelOS.Models.Enums.RoomStatus.Available &&
+                    r.IsActive)
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="summary-card"
+             data-filter="Occupied"
+             onclick="selectSummaryFilter(this, 'Occupied')">
+
+            <div class="summary-icon">
+                👤
+            </div>
+
+            <div>
+                <span>Dolu</span>
+
+                <strong>
+                    @Model.Count(r =>
+                                        r.Status == HotelOS.Models.Enums.RoomStatus.Occupied &&
+                                        r.IsActive)
+                </strong>
+            </div>
+
+        </div>
+
+
+        <div class="summary-card"
+             data-filter="OutOfService"
+             onclick="selectSummaryFilter(this, 'OutOfService')">
+
+            <div class="summary-icon">
+                🚫
+            </div>
+
+            <div>
+                <span>Kullanım Dışı</span>
+
+                <strong>
+                    @Model.Count(r => !r.IsActive)
+                </strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div id="filterInfo" class="filter-info">
+
+        <span id="filterText">
+            Filtre uygulanıyor.
+        </span>
+
+        <button type="button"
+                class="clear-filter"
+                onclick="clearSummaryFilter()">
+            ✕ Filtreyi Temizle
+        </button>
+
+    </div>
+
+
+    <div class="toolbar">
+
+        <div class="search">
+
+            <span>🔍</span>
+
+            <input type="text"
+                   id="roomSearch"
+                   placeholder="Oda numarası ara..."
+                   onkeyup="filterRooms()" />
+
+        </div>
+
+
+        <select id="roomTypeFilter"
+                onchange="filterRooms()">
+
+            <option value="">
+                Tüm Oda Tipleri
+            </option>
+
+            @foreach (var type in Model
+                        .Where(r => r.RoomType != null)
+                        .Select(r => r.RoomType!.TypeName)
+                        .Distinct())
+            {
+                <option value="@type">
+                    @type
+                </option>
+            }
+
+        </select>
+
+
+        <select id="roomStatusFilter"
+                onchange="filterRooms()">
+
+            <option value="">
+                Tüm Durumlar
+            </option>
+
+            <option value="Available">
+                Müsait
+            </option>
+
+            <option value="Occupied">
+                Dolu
+            </option>
+
+            <option value="Cleaning">
+                Temizlik
+            </option>
+
+            <option value="Maintenance">
+                Bakım
+            </option>
+
+            <option value="OutOfService">
+                Kullanım Dışı
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div class="rooms-grid">
+
+        @if (!Model.Any())
+        {
+            <div class="empty">
+
+                <div class="empty-icon">
+                    🛏️
+                </div>
+
+                <h2>
+                    Henüz oda bulunmuyor
+                </h2>
+
+                <p>
+                    Sisteme henüz oda eklenmemiş.
+                </p>
+
+            </div>
+        }
+        else
+        {
+            @foreach (var room in Model)
+            {
+                var actualStatus = !room.IsActive
+                ? "OutOfService"
+                : room.Status.ToString();
+
+                var statusClass = actualStatus.ToLower();
+
+                <div class="room-card"
+                     data-room-number="@room.RoomNumber"
+                     data-room-type="@(room.RoomType?.TypeName ?? "")"
+                     data-room-status="@actualStatus">
+
+                    <div class="room-top">
+
+                        <div class="room-number">
+                            Oda @room.RoomNumber
+                        </div>
+
+                        <span class="status @statusClass">
+
+                            @(actualStatus == "OutOfService"
+                                                ? "Kullanım Dışı"
+                                                : room.Status.ToString())
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="room-type">
+
+                        @(room.RoomType?.TypeName ??
+                                        "Oda tipi belirtilmemiş")
+
+            </div>
+
+
+                    <div class="room-details">
+
+                        <span>
+                            🏢 @room.Floor. Kat
+                        </span>
+
+                        <span>
+                            👥 @(room.RoomType?.Capacity ?? 0) kişi
+                        </span>
+
+                    </div>
+
+
+                    <div class="price">
+
+                        <strong>
+                            ₺@(room.RoomType?.PricePerNight.ToString("N0") ?? "0")
+                        </strong>
+
+                        <span>
+                            / gece
+                        </span>
+
+                    </div>
+
+
+                    <div class="actions">
+
+                        <a href="/RoomDetails?id=@room.Id"
+                           class="action-btn detail-btn">
+
+                            👁 Detay
+
+                        </a>
+
+
+                        <a href="/RoomEdit?id=@room.Id"
+                           class="action-btn edit-btn">
+
+                            ✏ Düzenle
+
+                        </a>
+
+
+                @if (room.IsActive)
+                        {
+                            <a href="/RoomOutOfService/Index?id=@room.Id"
+                               class="action-btn out-btn">
+
+                                🚫 Kullanım Dışı
+
+                            </a>
+                        }
+                        else
+                        {
+                            <form action="/RoomOutOfService/Activate"
+                                  method="post"
+                                  class="activate-form">
+
+                                <input type="hidden"
+                                       name="id"
+                                       value="@room.Id" />
+
+                                <button type="submit"
+                                        class="action-btn activate-btn">
+
+                                    ✅ Kullanıma Aç
+
+                                </button>
+
+                            </form>
+                        }
+
+                    </div>
+
+                </div>
+            }
+        }
+
+    </div>
+
+</div>
+
+
+<script>
+
+    let selectedSummaryFilter = "";
+
+
+    function selectSummaryFilter(card, filter) {
+
+        selectedSummaryFilter = filter;
+
+        document
+            .querySelectorAll(".summary-card")
+            .forEach(function (item) {
+
+                item.classList.remove("active-card");
+
+            });
+
+        card.classList.add("active-card");
+
+
+        const statusSelect =
+            document.getElementById("roomStatusFilter");
+
+        statusSelect.value = filter;
+
+
+        const filterInfo =
+            document.getElementById("filterInfo");
+
+        const filterText =
+            document.getElementById("filterText");
+
+
+        if (filter === "") {
+
+            filterInfo.classList.remove("show");
+
+        }
+        else {
+
+            let text = "";
+
+            if (filter === "Available") {
+                text = "🟢 Şu anda sadece Müsait odalar gösteriliyor.";
+            }
+            else if (filter === "Occupied") {
+                text = "👤 Şu anda sadece Dolu odalar gösteriliyor.";
+            }
+            else if (filter === "OutOfService") {
+                text = "🚫 Şu anda sadece Kullanım Dışı odalar gösteriliyor.";
+            }
+
+            filterText.textContent = text;
+
+            filterInfo.classList.add("show");
+        }
+
+
+        filterRooms();
+    }
+
+
+    function clearSummaryFilter() {
+
+        selectedSummaryFilter = "";
+
+        document
+            .querySelectorAll(".summary-card")
+            .forEach(function (item) {
+
+                item.classList.remove("active-card");
+
+            });
+
+
+        document
+            .querySelector(".summary-card[data-filter='']")
+            .classList.add("active-card");
+
+
+        document.getElementById("roomStatusFilter").value = "";
+
+        document.getElementById("filterInfo")
+            .classList.remove("show");
+
+
+        filterRooms();
+    }
+
+
+    function filterRooms() {
+
+        const search =
+            document
+                .getElementById("roomSearch")
+                .value
+                .toLowerCase()
+                .trim();
+
+
+        const type =
+            document
+                .getElementById("roomTypeFilter")
+                .value
+                .toLowerCase()
+                .trim();
+
+
+        const status =
+            document
+                .getElementById("roomStatusFilter")
+                .value
+                .toLowerCase()
+                .trim();
+
+
+        const rooms =
+            document.querySelectorAll(".room-card");
+
+
+        let visibleCount = 0;
+
+
+        rooms.forEach(function (room) {
+
+            const roomNumber =
+                (room.dataset.roomNumber || "")
+                    .toLowerCase();
+
+
+            const roomType =
+                (room.dataset.roomType || "")
+                    .toLowerCase();
+
+
+            const roomStatus =
+                (room.dataset.roomStatus || "")
+                    .toLowerCase();
+
+
+            const matchesSearch =
+                roomNumber.includes(search);
+
+
+            const matchesType =
+                type === "" ||
+                roomType === type;
+
+
+            const matchesStatus =
+                status === "" ||
+                roomStatus === status;
+
+
+            const shouldShow =
+                matchesSearch &&
+                matchesType &&
+                matchesStatus;
+
+
+            room.style.display =
+                shouldShow ? "" : "none";
+
+
+            if (shouldShow) {
+                visibleCount++;
+            }
+
+        });
+
+
+        updateEmptyFilterMessage(visibleCount);
+
+    }
+
+
+    function updateEmptyFilterMessage(visibleCount) {
+
+        const existing =
+            document.getElementById("filterEmpty");
+
+
+        if (existing) {
+            existing.remove();
+        }
+
+
+        const grid =
+            document.querySelector(".rooms-grid");
+
+
+        if (visibleCount === 0) {
+
+            const empty =
+                document.createElement("div");
+
+            empty.id = "filterEmpty";
+
+            empty.className = "empty";
+
+            empty.innerHTML = `
+                <div class="empty-icon">🔍</div>
+                <h2>Bu filtreye uygun oda bulunamadı</h2>
+                <p>Başka bir durum, oda tipi veya arama seçebilirsiniz.</p>
+            `;
+
+            grid.appendChild(empty);
+
+        }
+
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        filterRooms();
+
+    });
+
+</script>

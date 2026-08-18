@@ -1,0 +1,1571 @@
+﻿@{
+    ViewData["Title"] = "Yeni Rezervasyon";
+
+
+var customers = ViewBag.Customers as IEnumerable<HotelOS.Models.Customer>;
+    var roomTypes = ViewBag.RoomTypes as IEnumerable<HotelOS.Models.RoomType>;
+
+
+}
+
+<!DOCTYPE html>
+
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>HotelOS - Yeni Rezervasyon</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .page {
+            max-width: 1050px;
+            margin: auto;
+            padding: 35px;
+        }
+
+        .top {
+            margin-bottom: 25px;
+        }
+
+            .top h1 {
+                color: #172554;
+                font-size: 30px;
+            }
+
+            .top p {
+                color: #6b7280;
+                margin-top: 7px;
+            }
+
+        .form-card {
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 4px 18px rgba(0,0,0,.06);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #172554;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+            .field.full {
+                grid-column: 1 / -1;
+            }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #dbe1ea;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            outline: none;
+        }
+
+            select:focus,
+            input:focus {
+                border-color: #2563eb;
+            }
+
+        .room-types {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .room-type-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 14px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: .2s;
+            background: white;
+        }
+
+            .room-type-card:hover {
+                border-color: #93c5fd;
+                background: #f8fbff;
+            }
+
+            .room-type-card.selected {
+                border-color: #2563eb;
+                background: #eff6ff;
+            }
+
+        .room-type-icon {
+            font-size: 24px;
+            margin-bottom: 7px;
+        }
+
+        .room-type-name {
+            font-size: 13px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .room-type-price {
+            margin-top: 5px;
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        .room-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .room-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            background: white;
+            transition: .2s;
+        }
+
+            .room-option:hover {
+                border-color: #93c5fd;
+            }
+
+            .room-option.selected {
+                border-color: #2563eb;
+                background: #eff6ff;
+            }
+
+        .room-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #172554;
+        }
+
+        .room-details {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .room-price {
+            margin-top: 8px;
+            font-weight: bold;
+            color: #2563eb;
+            font-size: 13px;
+        }
+
+        .empty-room {
+            grid-column: 1 / -1;
+            padding: 25px;
+            text-align: center;
+            background: #f9fafb;
+            border-radius: 12px;
+            color: #6b7280;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 13px 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .summary {
+            margin-top: 25px;
+            padding: 18px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .summary-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #172554;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 7px;
+            color: #6b7280;
+        }
+
+        .summary-total {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            color: #172554;
+        }
+
+        .payment-box {
+            margin-top: 25px;
+            padding: 22px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+        }
+
+        .payment-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #172554;
+            margin-bottom: 18px;
+        }
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .payment-info {
+            margin-top: 18px;
+            padding: 16px;
+            border-radius: 11px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .payment-info-title {
+            font-weight: bold;
+            color: #172554;
+            margin-bottom: 10px;
+        }
+
+        .payment-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 7px;
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+            .payment-info-row strong {
+                color: #172554;
+            }
+
+        .payment-plan {
+            margin-top: 15px;
+            border-top: 1px solid #dbeafe;
+            padding-top: 12px;
+        }
+
+        .payment-plan-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 13px;
+        }
+
+            .payment-plan-item:last-child {
+                border-bottom: none;
+            }
+
+        .payment-plan-left {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .payment-plan-name {
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .payment-plan-date {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .payment-plan-amount {
+            font-weight: bold;
+            color: #172554;
+        }
+
+        .paid {
+            color: #15803d;
+        }
+
+        .waiting {
+            color: #b45309;
+        }
+
+        .installment-note {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #fefce8;
+            border: 1px solid #fde68a;
+            border-radius: 9px;
+            color: #854d0e;
+            font-size: 12px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 30px;
+            padding-top: 22px;
+            border-top: 1px solid #eef0f4;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: none;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .btn-back {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-save {
+            background: #2563eb;
+            color: white;
+        }
+
+            .btn-save:hover {
+                background: #1d4ed8;
+            }
+
+            .btn-save:disabled {
+                background: #9ca3af;
+                cursor: not-allowed;
+            }
+
+        @@media (max-width: 800px) {
+            .room-types {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .room-list {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 600px) {
+            .page {
+                padding: 20px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field.full {
+                grid-column: auto;
+            }
+        }
+    </style>
+    ```
+
+</head>
+
+<body>
+
+    <div class="page">
+
+        ```
+        <div class="top">
+            <h1>📅 Yeni Rezervasyon</h1>
+
+            <p>
+                Müşteri, tarih, oda ve ödeme bilgilerini girerek yeni rezervasyon oluşturun.
+            </p>
+        </div>
+
+        <div class="form-card">
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="error">
+                    ⚠️ @ViewBag.Error
+                </div>
+            }
+
+            <div class="section-title">
+                Rezervasyon Bilgileri
+            </div>
+
+            <form method="post" id="reservationForm">
+
+                <div class="grid">
+
+                    <div class="field full">
+
+                        <label>👤 Müşteri</label>
+
+                        <select name="customerId" required>
+
+                            <option value="">
+                                Müşteri seçiniz
+                            </option>
+
+                            @if (customers != null)
+                            {
+                                foreach (var customer in customers)
+                                {
+                                    <option value="@customer.Id">
+                                        @customer.FirstName @customer.LastName
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <div class="field full">
+
+                        <label>🏨 Oda Türü</label>
+
+                        <div class="room-types">
+
+                            @if (roomTypes != null)
+                            {
+                                foreach (var type in roomTypes)
+                                {
+                                    <div class="room-type-card"
+                                         onclick="selectRoomType(@type.Id, this)">
+
+                                        <div class="room-type-icon">
+
+                                            @if (type.TypeName.Contains("Tek"))
+                                            {
+                                                @:👤
+                                            }
+                                            else if (type.TypeName.Contains("Çift"))
+                                            {
+                                                @:👥
+                                            }
+                                            else if (type.TypeName.Contains("Aile"))
+                                            {
+                                                @:👨‍👩‍👧‍👦
+                                            }
+                                            else if (type.TypeName.Contains("Deluxe"))
+                                            {
+                                                @:✨
+                                            }
+                                            else
+                                            {
+                                                @:🏨
+                                            }
+
+                                        </div>
+
+                                        <div class="room-type-name">
+                                            @type.TypeName
+                                        </div>
+
+                                        <div class="room-type-price">
+                                            ₺@type.PricePerNight.ToString("N0") / gece
+                                        </div>
+
+                                    </div>
+                                }
+                            }
+
+                        </div>
+
+                        <input type="hidden"
+                               name="roomTypeId"
+                               id="roomTypeId"
+                               required />
+
+                    </div>
+
+                    <div class="field">
+
+                        <label>📅 Giriş Tarihi</label>
+
+                        <input type="datetime-local"
+                               name="checkIn"
+                               id="checkIn"
+                               required />
+
+                    </div>
+
+                    <div class="field">
+
+                        <label>📅 Çıkış Tarihi</label>
+
+                        <input type="datetime-local"
+                               name="checkOut"
+                               id="checkOut"
+                               required />
+
+                    </div>
+
+                    <div class="field full">
+
+                        <label>🛏️ Seçilen Tarihlerde Müsait Odalar</label>
+
+                        <div id="roomList"
+                             class="room-list">
+
+                            <div class="empty-room">
+                                Önce giriş ve çıkış tarihlerini seçiniz.
+                            </div>
+
+                        </div>
+
+                        <input type="hidden"
+                               name="roomId"
+                               id="roomId"
+                               required />
+
+                    </div>
+
+                    <div class="field">
+
+                        <label>👨 Yetişkin Sayısı</label>
+
+                        <input type="number"
+                               name="adultCount"
+                               id="adultCount"
+                               min="1"
+                               value="1"
+                               required />
+
+                    </div>
+
+                    <div class="field">
+
+                        <label>👶 Çocuk Sayısı</label>
+
+                        <input type="number"
+                               name="childCount"
+                               id="childCount"
+                               min="0"
+                               value="0"
+                               required />
+
+
+                      
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="summary">
+
+                    <div class="summary-title">
+                        📋 Rezervasyon Özeti
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Oda</span>
+                        <span id="summaryRoom">-</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Oda Türü</span>
+                        <span id="summaryType">-</span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Konaklama</span>
+                        <span id="summaryNight">-</span>
+                    </div>
+
+                    <div class="summary-total">
+                        <span>Toplam</span>
+                        <span id="summaryTotal">₺0,00</span>
+                    </div>
+
+                </div>
+
+                <div class="payment-box">
+
+                    <div class="payment-title">
+                        💳 Ödeme Bilgileri
+                    </div>
+
+                    <div class="payment-grid">
+
+                        <div class="field">
+
+                            <label>💳 Ödeme Yöntemi</label>
+
+                            <select name="paymentMethod"
+                                    id="paymentMethod"
+                                    required>
+
+                                <option value="">
+                                    Ödeme yöntemi seçiniz
+                                </option>
+
+                                <option value="Kredi Kartı">
+                                    💳 Kredi Kartı
+                                </option>
+
+                                <option value="Banka Kartı">
+                                    💳 Banka Kartı
+                                </option>
+
+                                <option value="Nakit">
+                                    💵 Nakit
+                                </option>
+
+                                <option value="Havale/EFT">
+                                    🏦 Havale / EFT
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="field">
+
+                            <label>🔢 Taksit Sayısı</label>
+
+                            <select name="installmentCount"
+                                    id="installmentCount"
+                                    required>
+
+                                <option value="1">
+                                    Tek Çekim
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div id="installmentNote"
+                         class="installment-note">
+                        Tarihleri seçtiğinizde kullanılabilecek taksit sayısı hesaplanacaktır.
+                    </div>
+
+                    <div class="payment-info">
+
+                        <div class="payment-info-title">
+                            💰 Ödeme Planı
+                        </div>
+
+                        <div class="payment-info-row">
+                            <span>Toplam Tutar</span>
+                            <strong id="paymentTotal">₺0,00</strong>
+                        </div>
+
+                        <div class="payment-info-row">
+                            <span>Ödeme Yöntemi</span>
+                            <strong id="paymentMethodText">-</strong>
+                        </div>
+
+                        <div class="payment-plan"
+                             id="paymentPlan">
+
+                            <div class="empty-room">
+                                Önce rezervasyon bilgilerini tamamlayınız.
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="buttons">
+
+                    <a href="/ReservationsView"
+                       class="btn btn-back">
+                        ← Vazgeç
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-save"
+                            id="saveButton">
+                        ✓ Rezervasyonu Oluştur
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+        ```
+
+    </div>
+
+    <script>
+
+        let selectedPrice = 0;
+        let selectedRoomNumber = "";
+        let selectedRoomType = "";
+
+        const checkInInput =
+            document.getElementById("checkIn");
+
+        const checkOutInput =
+            document.getElementById("checkOut");
+
+        const paymentMethodInput =
+            document.getElementById("paymentMethod");
+
+        const installmentInput =
+            document.getElementById("installmentCount");
+
+        const roomTypeInput =
+            document.getElementById("roomTypeId");
+
+        const roomIdInput =
+            document.getElementById("roomId");
+
+        const roomList =
+            document.getElementById("roomList");
+
+        function formatMoney(value) {
+
+            return Number(value).toLocaleString(
+                "tr-TR",
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            );
+        }
+
+        function formatDate(date) {
+
+            return date.toLocaleDateString(
+                "tr-TR",
+                {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric"
+                }
+            );
+        }
+
+        function selectRoomType(typeId, element) {
+
+            document
+                .querySelectorAll(".room-type-card")
+                .forEach(card => {
+                    card.classList.remove("selected");
+                });
+
+            element.classList.add("selected");
+
+            roomTypeInput.value = typeId;
+
+            roomIdInput.value = "";
+
+            selectedPrice = 0;
+            selectedRoomNumber = "";
+            selectedRoomType = "";
+
+            document.getElementById("summaryRoom").innerText = "-";
+            document.getElementById("summaryType").innerText = "-";
+            document.getElementById("summaryTotal").innerText = "₺0,00";
+            document.getElementById("summaryNight").innerText = "-";
+
+            if (checkInInput.value && checkOutInput.value) {
+                loadAvailableRooms();
+            }
+        }
+
+        checkInInput.addEventListener(
+            "change",
+            function () {
+
+                roomIdInput.value = "";
+
+                selectedPrice = 0;
+
+                updatePaymentOptions();
+
+                loadAvailableRooms();
+
+                calculateTotal();
+            }
+        );
+
+        checkOutInput.addEventListener(
+            "change",
+            function () {
+
+                roomIdInput.value = "";
+
+                selectedPrice = 0;
+
+                updatePaymentOptions();
+
+                loadAvailableRooms();
+
+                calculateTotal();
+            }
+        );
+
+        paymentMethodInput.addEventListener(
+            "change",
+            function () {
+
+                updatePaymentOptions();
+
+                updatePaymentPlan();
+            }
+        );
+
+        installmentInput.addEventListener(
+            "change",
+            function () {
+
+                updatePaymentPlan();
+            }
+        );
+
+        async function loadAvailableRooms() {
+
+            const roomTypeId =
+                roomTypeInput.value;
+
+            const checkIn =
+                checkInInput.value;
+
+            const checkOut =
+                checkOutInput.value;
+
+            if (!roomTypeId) {
+
+                roomList.innerHTML =
+                    '<div class="empty-room">' +
+                    'Önce bir oda türü seçiniz.' +
+                    '</div>';
+
+                return;
+            }
+
+            if (!checkIn || !checkOut) {
+
+                roomList.innerHTML =
+                    '<div class="empty-room">' +
+                    'Önce giriş ve çıkış tarihlerini seçiniz.' +
+                    '</div>';
+
+                return;
+            }
+
+            const start =
+                new Date(checkIn);
+
+            const end =
+                new Date(checkOut);
+
+            if (end <= start) {
+
+                roomList.innerHTML =
+                    '<div class="empty-room">' +
+                    '⚠️ Çıkış tarihi giriş tarihinden sonra olmalıdır.' +
+                    '</div>';
+
+                return;
+            }
+
+            roomList.innerHTML =
+                '<div class="empty-room">' +
+                '🔄 Seçilen tarihlerde müsait odalar kontrol ediliyor...' +
+                '</div>';
+
+            try {
+
+                const url =
+                    "/ReservationCreate/GetAvailableRooms" +
+                    "?roomTypeId=" +
+                    encodeURIComponent(roomTypeId) +
+                    "&checkIn=" +
+                    encodeURIComponent(checkIn) +
+                    "&checkOut=" +
+                    encodeURIComponent(checkOut);
+
+                const response =
+                    await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error("Sunucu hatası");
+                }
+
+                const data =
+                    await response.json();
+
+                showRooms(data);
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                roomList.innerHTML =
+                    '<div class="empty-room">' +
+                    '⚠️ Müsait odalar yüklenirken hata oluştu.' +
+                    '</div>';
+            }
+        }
+
+        function showRooms(data) {
+
+            if (!data.success) {
+
+                roomList.innerHTML =
+                    '<div class="empty-room">' +
+                    '⚠️ ' +
+                    data.message +
+                    '</div>';
+
+                return;
+            }
+
+            if (!data.rooms ||
+                data.rooms.length === 0) {
+
+                roomList.innerHTML =
+                    '<div class="empty-room">' +
+                    '😔 Seçilen tarihlerde bu oda türünde müsait oda bulunmuyor.' +
+                    '</div>';
+
+                return;
+            }
+
+            roomList.innerHTML = "";
+
+            data.rooms.forEach(room => {
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "room-option";
+
+                card.innerHTML =
+                    '<div class="room-number">' +
+                    '🛏️ Oda ' +
+                    room.roomNumber +
+                    '</div>' +
+
+                    '<div class="room-details">' +
+                    '👥 Kapasite: ' +
+                    room.capacity +
+                    ' kişi' +
+                    '</div>' +
+
+                    '<div class="room-price">' +
+                    '₺' +
+                    formatMoney(room.price) +
+                    ' / gece' +
+                    '</div>';
+
+                card.onclick = function () {
+
+                    document
+                        .querySelectorAll(".room-option")
+                        .forEach(option => {
+                            option.classList.remove("selected");
+                        });
+
+                    card.classList.add("selected");
+
+                    roomIdInput.value =
+                        room.id;
+
+                    selectedPrice =
+                        Number(room.price);
+
+                    selectedRoomNumber =
+                        room.roomNumber;
+
+                    selectedRoomType =
+                        room.typeName;
+
+                    document.getElementById("summaryRoom").innerText =
+                        "Oda " + room.roomNumber;
+
+                    document.getElementById("summaryType").innerText =
+                        room.typeName;
+
+                    calculateTotal();
+                };
+
+                roomList.appendChild(card);
+            });
+        }
+
+        function calculateTotal() {
+
+            const checkIn =
+                checkInInput.value;
+
+            const checkOut =
+                checkOutInput.value;
+
+            if (!checkIn ||
+                !checkOut ||
+                selectedPrice <= 0) {
+
+                document.getElementById("summaryNight").innerText =
+                    "-";
+
+                document.getElementById("summaryTotal").innerText =
+                    "₺0,00";
+
+                updatePaymentPlan();
+
+                return;
+            }
+
+            const start =
+                new Date(checkIn);
+
+            const end =
+                new Date(checkOut);
+
+            const milliseconds =
+                end - start;
+
+            const nights =
+                Math.ceil(
+                    milliseconds /
+                    (1000 * 60 * 60 * 24)
+                );
+
+            if (nights <= 0) {
+
+                document.getElementById("summaryNight").innerText =
+                    "-";
+
+                document.getElementById("summaryTotal").innerText =
+                    "₺0,00";
+
+                updatePaymentPlan();
+
+                return;
+            }
+
+            const total =
+                nights * selectedPrice;
+
+            document.getElementById("summaryNight").innerText =
+                nights + " gece";
+
+            document.getElementById("summaryTotal").innerText =
+                "₺" + formatMoney(total);
+
+            updatePaymentPlan();
+        }
+
+        function getMaximumInstallments() {
+
+            const paymentMethod =
+                paymentMethodInput.value;
+
+            if (!paymentMethod) {
+                return 1;
+            }
+
+            if (
+                paymentMethod === "Nakit" ||
+                paymentMethod === "Havale/EFT"
+            ) {
+                return 1;
+            }
+
+            if (!checkInInput.value) {
+                return 1;
+            }
+
+            const now =
+                new Date();
+
+            const checkIn =
+                new Date(checkInInput.value);
+
+            if (checkIn <= now) {
+                return 1;
+            }
+
+            let months = 0;
+
+            let temp =
+                new Date(now);
+
+            while (true) {
+
+                const next =
+                    new Date(temp);
+
+                next.setMonth(
+                    next.getMonth() + 1
+                );
+
+                if (next <= checkIn) {
+                    months++;
+                    temp = next;
+                }
+                else {
+                    break;
+                }
+            }
+
+            let maximum =
+                months + 1;
+
+            if (maximum < 2) {
+                maximum = 2;
+            }
+
+            if (maximum > 5) {
+                maximum = 5;
+            }
+
+            return maximum;
+        }
+
+        function updatePaymentOptions() {
+
+            const paymentMethod =
+                paymentMethodInput.value;
+
+            const maximum =
+                getMaximumInstallments();
+
+            const oldValue =
+                Number(installmentInput.value) || 1;
+
+            installmentInput.innerHTML = "";
+
+            for (
+                let i = 1;
+                i <= maximum;
+                i++
+            ) {
+
+                const option =
+                    document.createElement("option");
+
+                option.value = i;
+
+                if (i === 1) {
+                    option.textContent =
+                        "Tek Çekim";
+                }
+                else {
+                    option.textContent =
+                        i + " Taksit";
+                }
+
+                installmentInput.appendChild(option);
+            }
+
+            if (
+                oldValue >= 1 &&
+                oldValue <= maximum
+            ) {
+                installmentInput.value =
+                    oldValue;
+            }
+            else {
+                installmentInput.value =
+                    maximum;
+            }
+
+            const note =
+                document.getElementById(
+                    "installmentNote"
+                );
+
+            if (
+                paymentMethod === "Nakit" ||
+                paymentMethod === "Havale/EFT"
+            ) {
+
+                note.innerText =
+                    paymentMethod +
+                    " ödemelerinde taksit yapılamaz. Ödeme rezervasyon oluşturulurken alınır.";
+
+            }
+            else if (paymentMethod) {
+
+                note.innerText =
+                    "Bu rezervasyon için en fazla " +
+                    maximum +
+                    " taksit yapılabilir. İlk ödeme rezervasyon sırasında, son ödeme giriş tarihinde alınır.";
+
+            }
+            else {
+
+                note.innerText =
+                    "Ödeme yöntemi seçtiğinizde kullanılabilecek taksit seçenekleri gösterilir.";
+            }
+
+            updatePaymentPlan();
+        }
+
+        function updatePaymentPlan() {
+
+            const paymentMethod =
+                paymentMethodInput.value;
+
+            const installmentCount =
+                Number(installmentInput.value) || 1;
+
+            const totalText =
+                document.getElementById(
+                    "summaryTotal"
+                ).innerText
+                    .replace("₺", "")
+                    .replace(/\./g, "")
+                    .replace(",", ".");
+
+            const total =
+                Number(totalText) || 0;
+
+            document.getElementById(
+                "paymentTotal"
+            ).innerText =
+                "₺" + formatMoney(total);
+
+            document.getElementById(
+                "paymentMethodText"
+            ).innerText =
+                paymentMethod || "-";
+
+            const plan =
+                document.getElementById(
+                    "paymentPlan"
+                );
+
+            if (
+                !paymentMethod ||
+                total <= 0 ||
+                !checkInInput.value
+            ) {
+
+                plan.innerHTML =
+                    '<div class="empty-room">' +
+                    'Rezervasyon ve ödeme bilgilerini tamamlayınız.' +
+                    '</div>';
+
+                return;
+            }
+
+            const now =
+                new Date();
+
+            const checkIn =
+                new Date(checkInInput.value);
+
+            const amounts = [];
+
+            const base =
+                Math.floor(
+                    (total / installmentCount) * 100
+                ) / 100;
+
+            for (
+                let i = 1;
+                i <= installmentCount;
+                i++
+            ) {
+
+                if (
+                    i === installmentCount
+                ) {
+
+                    const previous =
+                        base *
+                        (installmentCount - 1);
+
+                    amounts.push(
+                        Math.round(
+                            (total - previous) *
+                            100
+                        ) / 100
+                    );
+
+                }
+                else {
+
+                    amounts.push(base);
+                }
+            }
+
+            let dates = [];
+
+            if (installmentCount === 1) {
+
+                dates.push(now);
+
+            }
+            else {
+
+                const totalDays =
+                    (
+                        checkIn -
+                        now
+                    ) /
+                    (1000 * 60 * 60 * 24);
+
+                for (
+                    let i = 0;
+                    i < installmentCount;
+                    i++
+                ) {
+
+                    if (
+                        i === 0
+                    ) {
+
+                        dates.push(now);
+
+                    }
+                    else if (
+                        i === installmentCount - 1
+                    ) {
+
+                        dates.push(checkIn);
+
+                    }
+                    else {
+
+                        const ratio =
+                            i /
+                            (installmentCount - 1);
+
+                        const date =
+                            new Date(
+                                now.getTime() +
+                                (
+                                    totalDays *
+                                    ratio *
+                                    24 *
+                                    60 *
+                                    60 *
+                                    1000
+                                )
+                            );
+
+                        dates.push(date);
+                    }
+                }
+            }
+
+            plan.innerHTML = "";
+
+            for (
+                let i = 0;
+                i < installmentCount;
+                i++
+            ) {
+
+                const item =
+                    document.createElement("div");
+
+                item.className =
+                    "payment-plan-item";
+
+                const isPaid =
+                    i === 0;
+
+                const statusClass =
+                    isPaid
+                        ? "paid"
+                        : "waiting";
+
+                const statusText =
+                    isPaid
+                        ? "✓ Ödendi"
+                        : "⏳ Bekliyor";
+
+                const installmentName =
+                    installmentCount === 1
+                        ? "Rezervasyon Ödemesi"
+                        : i === 0
+                            ? "1. Taksit"
+                            : i === installmentCount - 1
+                                ? i + 1 + ". Taksit • Son Ödeme"
+                                : i + 1 + ". Taksit";
+
+                item.innerHTML =
+                    '<div class="payment-plan-left">' +
+
+                    '<div class="payment-plan-name">' +
+                    installmentName +
+                    '</div>' +
+
+                    '<div class="payment-plan-date">' +
+                    '📅 ' +
+                    formatDate(dates[i]) +
+                    '</div>' +
+
+                    '</div>' +
+
+                    '<div>' +
+
+                    '<div class="payment-plan-amount">' +
+                    '₺' +
+                    formatMoney(amounts[i]) +
+                    '</div>' +
+
+                    '<div class="' +
+                    statusClass +
+                    '" style="font-size:12px;text-align:right;margin-top:3px;">' +
+                    statusText +
+                    '</div>' +
+
+                    '</div>';
+
+                plan.appendChild(item);
+            }
+        }
+
+        document
+            .getElementById("reservationForm")
+            .addEventListener(
+                "submit",
+                function (event) {
+
+                    const roomId =
+                        roomIdInput.value;
+
+                    const roomTypeId =
+                        roomTypeInput.value;
+
+                    const checkIn =
+                        checkInInput.value;
+
+                    const checkOut =
+                        checkOutInput.value;
+
+                    const paymentMethod =
+                        paymentMethodInput.value;
+
+                    if (!roomTypeId) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Lütfen bir oda türü seçiniz."
+                        );
+
+                        return;
+                    }
+
+                    if (!roomId) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Lütfen seçilen tarihler için müsait bir oda seçiniz."
+                        );
+
+                        return;
+                    }
+
+                    if (!checkIn || !checkOut) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Lütfen giriş ve çıkış tarihlerini seçiniz."
+                        );
+
+                        return;
+                    }
+
+                    if (!paymentMethod) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Lütfen ödeme yöntemini seçiniz."
+                        );
+
+                        return;
+                    }
+
+                    const maximum =
+                        getMaximumInstallments();
+
+                    const selected =
+                        Number(
+                            installmentInput.value
+                        );
+
+                    if (
+                        selected < 1 ||
+                        selected > maximum
+                    ) {
+
+                        event.preventDefault();
+
+                        alert(
+                            "Bu rezervasyon için seçilen taksit sayısı uygun değil."
+                        );
+
+                        return;
+                    }
+                }
+            );
+
+        updatePaymentOptions();
+
+    </script>
+
+</body>
+</html>

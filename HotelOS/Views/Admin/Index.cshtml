@@ -1,0 +1,593 @@
+﻿@{
+    ViewData["Title"] = "Admin Paneli";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>HotelOS - Admin Paneli</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: #172554;
+            color: white;
+            padding: 28px 18px;
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: bold;
+            margin-bottom: 35px;
+            text-align: center;
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+            .menu a {
+                color: #dbeafe;
+                text-decoration: none;
+                padding: 13px 15px;
+                border-radius: 10px;
+                display: block;
+                transition: 0.2s;
+            }
+
+                .menu a:hover,
+                .menu a.active {
+                    background: #2563eb;
+                    color: white;
+                }
+
+        .main {
+            margin-left: 240px;
+            padding: 35px;
+            min-height: 100vh;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+            .top h1 {
+                font-size: 30px;
+            }
+
+        .welcome {
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
+        .logout {
+            background: #ef4444;
+            color: white;
+            text-decoration: none;
+            padding: 11px 18px;
+            border-radius: 9px;
+        }
+
+            .logout:hover {
+                background: #dc2626;
+            }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 23px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+            .card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            }
+
+        .card-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+            .section h2 {
+                margin-bottom: 20px;
+                font-size: 21px;
+            }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .action {
+            padding: 18px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #1f2937;
+            transition: 0.2s;
+            display: block;
+            min-height: 100px;
+            background: white;
+        }
+
+            .action:hover {
+                border-color: #2563eb;
+                transform: translateY(-2px);
+                background: #f8faff;
+                box-shadow: 0 5px 15px rgba(37,99,235,0.08);
+            }
+
+            .action strong {
+                display: block;
+                margin-bottom: 8px;
+                font-size: 15px;
+            }
+
+            .action span {
+                color: #6b7280;
+                font-size: 13px;
+                line-height: 1.4;
+            }
+
+        .card-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .card-button {
+            background: #f8fafc;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            padding: 9px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+
+            .card-button:hover {
+                background: #eef2ff;
+                border-color: #2563eb;
+                color: #2563eb;
+            }
+
+        .empty-actions {
+            min-height: 100px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 18px;
+        }
+
+        .mini-create-button {
+            flex: 1;
+            min-height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: #f8fafc;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px 10px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+
+            .mini-create-button:hover {
+                background: #eef2ff;
+                border-color: #2563eb;
+                color: #2563eb;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 10px rgba(37,99,235,0.08);
+            }
+
+        @@media (max-width: 1100px) {
+            .cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @@media (max-width: 700px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main {
+                margin-left: 200px;
+                padding: 20px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .top {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .empty-actions {
+                flex-direction: column;
+            }
+
+            .mini-create-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            🏨 HotelOS
+        </div>
+
+        <nav class="menu">
+
+            <a asp-controller="Admin" asp-action="Index">
+                📊 Dashboard
+            </a>
+
+            <a href="/RoomsView/Index">
+                🛏️ Odalar
+            </a>
+
+            <a href="/ReservationsView/Index">
+                📅 Rezervasyonlar
+            </a>
+
+            <a href="/CustomerPanel/Index">
+                👥 Müşteriler
+            </a>
+
+            <a href="/EmployeePanel/Index">
+                👨‍💼 Personeller
+            </a>
+
+            <a href="/PaymentPanel">
+                💳 Ödemeler
+            </a>
+
+            <a href="/CleaningManagement/Index">
+                🧹 Temizlik
+            </a>
+
+            <a href="/MaintenancePanel/Index">
+                🔧 Bakım
+            </a>
+
+            <a href="/InvoicePanel/Index">
+                📄 Faturalar
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="main">
+
+        <div class="top">
+
+            <div>
+
+                <h1>
+                    Admin Dashboard
+                </h1>
+
+                <p class="welcome">
+                    HotelOS yönetim paneline hoş geldiniz.
+                </p>
+
+            </div>
+
+            <a href="/Login/Index" class="logout">
+                🚪 Çıkış Yap
+            </a>
+
+        </div>
+
+        <!-- Tıklanabilir hale getirilen metrik kartları -->
+        <div class="cards">
+
+            <a href="/RoomsView/Index" class="card">
+
+                <div class="card-icon">
+                    🛏️
+                </div>
+
+                <div class="card-title">
+                    Toplam Oda
+                </div>
+
+                <div class="card-value">
+                    @(ViewBag.TotalRooms ?? 0)
+                </div>
+
+            </a>
+
+            <a href="/ReservationsView/Index" class="card">
+
+                <div class="card-icon">
+                    📅
+                </div>
+
+                <div class="card-title">
+                    Aktif Rezervasyon
+                </div>
+
+                <div class="card-value">
+                    @(ViewBag.ActiveReservations ?? 0)
+                </div>
+
+            </a>
+
+            <a href="/CustomerPanel/Index" class="card">
+
+                <div class="card-icon">
+                    👥
+                </div>
+
+                <div class="card-title">
+                    Müşteriler
+                </div>
+
+                <div class="card-value">
+                    @(ViewBag.TotalCustomers ?? 0)
+                </div>
+
+            </a>
+
+            <a href="/PaymentPanel" class="card">
+
+                <div class="card-icon">
+                    💰
+                </div>
+
+                <div class="card-title">
+                    Bugünkü Gelir
+                </div>
+
+                <div class="card-value">
+                    ₺@(ViewBag.TodayIncome != null
+                                        ? Convert.ToDecimal(ViewBag.TodayIncome).ToString("N0")
+                                        : "0")
+                </div>
+
+            </a>
+
+        </div>
+
+        <div class="section">
+
+            <h2>
+                Hızlı İşlemler
+            </h2>
+
+            <div class="quick-actions">
+
+                <a href="/ReservationsView/Index" class="action">
+
+                    <strong>
+                        📅 Rezervasyonlar
+                    </strong>
+
+                    <span>
+                        Rezervasyonları görüntüle ve yönet.
+                    </span>
+
+                </a>
+
+                <a href="/CustomerPanel/Index" class="action">
+
+                    <strong>
+                        👤 Müşteriler
+                    </strong>
+
+                    <span>
+                        Müşterileri görüntüle ve konaklama bilgilerini yönet.
+                    </span>
+
+                </a>
+
+                <a href="/RoomsView/Index" class="action">
+
+                    <strong>
+                        🛏️ Oda Yönetimi
+                    </strong>
+
+                    <span>
+                        Odaları ve oda durumlarını yönet.
+                    </span>
+
+                </a>
+
+                <a href="/EmployeePanel/Index" class="action">
+
+                    <strong>
+                        👨‍💼 Personel Yönetimi
+                    </strong>
+
+                    <span>
+                        Personel bilgilerini ve görevlerini yönet.
+                    </span>
+
+                </a>
+
+                <a href="/PaymentPanel" class="action">
+
+                    <strong>
+                        💳 Ödemeler
+                    </strong>
+
+                    <span>
+                        Ödeme işlemlerini görüntüle ve yönet.
+                    </span>
+
+                </a>
+
+                <div class="action">
+
+                    <strong>
+                        🧹 Temizlik
+                    </strong>
+
+                    <span>
+                        Temizlik görevlerini görüntüle ve yönet.
+                    </span>
+
+                    <div class="card-buttons">
+
+                        <a href="/CleaningManagement/Index"
+                           class="card-button">
+                            👁️ Görevleri Gör
+                        </a>
+
+                        <a href="/CleaningTaskCreate/Index"
+                           class="card-button">
+                            ➕ Görev Oluştur
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <div class="action">
+
+                    <strong>
+                        🔧 Bakım
+                    </strong>
+
+                    <span>
+                        Bakım taleplerini görüntüle ve yönet.
+                    </span>
+
+                    <div class="card-buttons">
+
+                        <a href="/MaintenancePanel/Index"
+                           class="card-button">
+                            👁️ Talepleri Gör
+                        </a>
+
+                        <a href="/MaintenanceRequestCreate/Index"
+                           class="card-button">
+                            ➕ Talep Oluştur
+                        </a>
+
+                    </div>
+
+                </div>
+
+                <a href="/InvoicePanel/Index" class="action">
+
+                    <strong>
+                        📄 Faturalar
+                    </strong>
+
+                    <span>
+                        Faturaları görüntüle, detaylarını incele ve yönet.
+                    </span>
+
+                </a>
+
+                <div class="empty-actions">
+
+                    <a href="/CleaningTaskCreate/Index"
+                       class="mini-create-button">
+                        🧹 Temizlik Görevi Ekle
+                    </a>
+
+                    <a href="/MaintenanceRequestCreate/Index"
+                       class="mini-create-button">
+                        🔧 Bakım Görevi Ekle
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

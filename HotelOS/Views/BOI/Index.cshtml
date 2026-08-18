@@ -1,0 +1,608 @@
+﻿@{
+    ViewData["Title"] = "BOİ Müdür Paneli";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>BOİ Müdür Paneli - HotelOS</title>
+
+    <link rel="stylesheet" href="~/css/boi.css" />
+</head>
+
+<body>
+
+    <div class="boi-app">
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-logo">
+                    H
+                </div>
+
+                <div class="brand-text">
+                    <strong>HotelOS</strong>
+                    <span>Operasyon Yönetimi</span>
+                </div>
+            </div>
+
+            <div class="profile-box">
+
+                <div class="profile-avatar">
+                    B
+                </div>
+
+                <div class="profile-info">
+                    <strong>BOİ Müdürü</strong>
+                    <span>Operasyon Yönetimi</span>
+                </div>
+
+            </div>
+
+            <nav class="sidebar-menu">
+
+                <div class="menu-label">
+                    GENEL
+                </div>
+
+                <a href="/BOI" class="nav-link active">
+                    <span class="nav-icon">▦</span>
+                    <span>Dashboard</span>
+                </a>
+
+                <div class="menu-label">
+                    OPERASYON
+                </div>
+
+                <a href="@Url.Action("Cleaning", "BOI")" class="nav-link">
+                    <span class="nav-icon">🧹</span>
+                    <span>Temizlik</span>
+                    <span class="badge">@(ViewBag.PendingCleaning ?? 0)</span>
+                </a>
+
+                <a href="/MaintenancePanel" class="nav-link">
+                    <span class="nav-icon">🔧</span>
+                    <span>Bakım</span>
+                    <span class="badge">0</span>
+                </a>
+
+                <a href="/Vale" class="nav-link">
+                    <span class="nav-icon">🚗</span>
+                    <span>Vale</span>
+                    <span class="badge">0</span>
+                </a>
+
+                <a href="/Pool" class="nav-link">
+                    <span class="nav-icon">🏊</span>
+                    <span>Havuz</span>
+                    <span class="badge">0</span>
+                </a>
+
+                <a href="/Activities" class="nav-link">
+                    <span class="nav-icon">📅</span>
+                    <span>Aktiviteler</span>
+                    <span class="badge">0</span>
+                </a>
+
+                <div class="menu-label">
+                    TESİS & HİZMETLER
+                </div>
+
+                <a href="/Stores" class="nav-link">
+                    <span class="nav-icon">🏪</span>
+                    <span>Mağazalar</span>
+                </a>
+
+                <a href="/CommonAreas" class="nav-link">
+                    <span class="nav-icon">🏢</span>
+                    <span>Ortak Alanlar</span>
+                </a>
+
+                <a href="/TechnicalOperations" class="nav-link">
+                    <span class="nav-icon">⚙</span>
+                    <span>Teknik Operasyon</span>
+                </a>
+
+                <div class="menu-label">
+                    PERSONEL & YÖNETİM
+                </div>
+
+                <a href="@Url.Action("Index", "BOIEmployees")" class="nav-link">
+                    <span class="nav-icon">👥</span>
+                    <span>Personeller</span>
+                    <span class="badge">@(ViewBag.ActiveEmployees ?? 0)</span>
+                </a>
+
+                <a href="@Url.Action("Index", "BOIReports")" class="nav-link">
+                    <span class="nav-icon">📊</span>
+                    <span>Raporlar</span>
+                </a>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <a href="/Login/Logout" class="logout-link">
+                    <span>↪</span>
+                    Çıkış Yap
+                </a>
+
+            </div>
+
+        </aside>
+
+        <main class="main">
+
+            <header class="topbar">
+
+                <div class="page-heading">
+
+                    <div class="breadcrumb">
+                        HotelOS / Yönetim
+                    </div>
+
+                    <h1>Operasyon Dashboard</h1>
+
+                    <p>
+                        Otelin günlük operasyonlarını ve personel görevlerini buradan yönetin.
+                    </p>
+
+                </div>
+
+                <div class="topbar-actions">
+
+                    <button class="notification-btn" type="button">
+                        🔔
+                        <span></span>
+                    </button>
+
+                    <div class="top-user">
+
+                        <div class="top-avatar">
+                            B
+                        </div>
+
+                        <div>
+                            <strong>BOİ Müdürü</strong>
+                            <small>Operasyon Müdürü</small>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+            <section class="stats-grid">
+
+                <a href="/Activities" class="stat-card stat-button">
+
+                    <div class="stat-top">
+                        <span class="stat-title">
+                            Yaklaşan Etkinlikler
+                        </span>
+
+                        <div class="stat-icon blue">
+                            📅
+                        </div>
+                    </div>
+
+                    <div class="stat-number">
+                        0
+                    </div>
+
+                    <div class="stat-description">
+                        Planlanan etkinlik
+                    </div>
+
+                </a>
+
+                <a href="/BOI/Cleaning" class="stat-card stat-button">
+
+                    <div class="stat-top">
+                        <span class="stat-title">
+                            Temizlik
+                        </span>
+
+                        <div class="stat-icon green">
+                            🧹
+                        </div>
+                    </div>
+
+                    <div class="stat-number">
+                        @(ViewBag.PendingCleaning ?? 0)
+                    </div>
+
+                    <div class="stat-description">
+                        Temizlik bekleyen görev
+                    </div>
+
+                </a>
+
+                <a href="/MaintenancePanel" class="stat-card stat-button">
+
+                    <div class="stat-top">
+                        <span class="stat-title">
+                            Bakım
+                        </span>
+
+                        <div class="stat-icon orange">
+                            🔧
+                        </div>
+                    </div>
+
+                    <div class="stat-number">
+                        0
+                    </div>
+
+                    <div class="stat-description">
+                        Açık bakım talebi
+                    </div>
+
+                </a>
+
+                <a href="@Url.Action("Index", "BOIEmployees")" class="stat-card stat-button">
+
+                    <div class="stat-top">
+
+                        <span class="stat-title">
+                            Aktif Personel
+                        </span>
+
+                        <div class="stat-icon purple">
+                            👥
+                        </div>
+
+                    </div>
+
+                    <div class="stat-number">
+                        @(ViewBag.ActiveEmployees ?? 0)
+                    </div>
+
+                    <div class="stat-description">
+                        Aktif personel
+                    </div>
+
+                </a>
+
+            </section>
+
+            <div class="dashboard-grid">
+
+                <section class="panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <h2>Operasyon Merkezi</h2>
+
+                            <p>
+                                Departmanların günlük durumunu görüntüleyin.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="department-list">
+
+                        <a href="/BOI/Cleaning" class="department">
+
+                            <div class="department-icon cleaning">
+                                🧹
+                            </div>
+
+                            <div class="department-info">
+                                <strong>Temizlik</strong>
+
+                                <span>
+                                    Odaları ve temizlik personellerini yönetin
+                                </span>
+                            </div>
+
+                            <div class="department-status">
+                                <strong>@(ViewBag.PendingCleaning ?? 0)</strong>
+                                <span>Bekleyen</span>
+                            </div>
+
+                            <div class="department-arrow">
+                                →
+                            </div>
+
+                        </a>
+
+                        <a href="/MaintenancePanel" class="department">
+
+                            <div class="department-icon maintenance">
+                                🔧
+                            </div>
+
+                            <div class="department-info">
+
+                                <strong>Bakım</strong>
+
+                                <span>
+                                    Teknik sorunları ve bakım personelini yönetin
+                                </span>
+
+                            </div>
+
+                            <div class="department-status">
+                                <strong>0</strong>
+                                <span>Açık talep</span>
+                            </div>
+
+                            <div class="department-arrow">
+                                →
+                            </div>
+
+                        </a>
+
+                        <a href="/Vale" class="department">
+
+                            <div class="department-icon valet">
+                                🚗
+                            </div>
+
+                            <div class="department-info">
+
+                                <strong>Vale</strong>
+
+                                <span>
+                                    Araç teslim ve vale personellerini yönetin
+                                </span>
+
+                            </div>
+
+                            <div class="department-status">
+                                <strong>0</strong>
+                                <span>Bekleyen</span>
+                            </div>
+
+                            <div class="department-arrow">
+                                →
+                            </div>
+
+                        </a>
+
+                        <a href="/Activities" class="department">
+
+                            <div class="department-icon restaurant">
+                                📅
+                            </div>
+
+                            <div class="department-info">
+
+                                <strong>Aktiviteler</strong>
+
+                                <span>
+                                    Otelde yapılacak etkinlikleri ve aktiviteleri yönetin
+                                </span>
+
+                            </div>
+
+                            <div class="department-status">
+                                <strong>0</strong>
+                                <span>Planlanan</span>
+                            </div>
+
+                            <div class="department-arrow">
+                                →
+                            </div>
+
+                        </a>
+
+                        <a href="/Pool" class="department">
+
+                            <div class="department-icon pool">
+                                🏊
+                            </div>
+
+                            <div class="department-info">
+
+                                <strong>Havuz</strong>
+
+                                <span>
+                                    Havuz operasyonlarını ve sorunları yönetin
+                                </span>
+
+                            </div>
+
+                            <div class="department-status">
+                                <strong>0</strong>
+                                <span>Talep</span>
+                            </div>
+
+                            <div class="department-arrow">
+                                →
+                            </div>
+
+                        </a>
+
+                    </div>
+
+                </section>
+
+                <div class="right-column">
+
+                    <section class="panel">
+
+                        <div class="panel-header">
+
+                            <div>
+                                <h2>Hızlı İşlemler</h2>
+
+                                <p>
+                                    En sık kullanılan işlemler
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div class="quick-actions">
+
+                            <a href="@Url.Action("Index", "BOIEmployees")"
+                               class="quick-action">
+
+                                <div class="quick-icon">
+                                    👤
+                                </div>
+
+                                <div>
+                                    <strong>Personeller</strong>
+                                    <span>Personelleri yönet</span>
+                                </div>
+
+                            </a>
+
+                            <a href="/BOI/Cleaning"
+                               class="quick-action">
+
+                                <div class="quick-icon">
+                                    🧹
+                                </div>
+
+                                <div>
+                                    <strong>Temizlik</strong>
+                                    <span>Temizlik görevlerini yönet</span>
+                                </div>
+
+                            </a>
+
+                            <a href="/MaintenancePanel"
+                               class="quick-action">
+
+                                <div class="quick-icon">
+                                    🔧
+                                </div>
+
+                                <div>
+                                    <strong>Bakım</strong>
+                                    <span>Bakım taleplerini yönet</span>
+                                </div>
+
+                            </a>
+
+                            <a href="/Activities"
+                               class="quick-action">
+
+                                <div class="quick-icon">
+                                    📅
+                                </div>
+
+                                <div>
+                                    <strong>Etkinlik Ekle</strong>
+                                    <span>Yeni etkinlik oluştur</span>
+                                </div>
+
+                            </a>
+
+                        </div>
+
+                    </section>
+
+                    <section class="panel">
+
+                        <div class="panel-header">
+
+                            <div>
+                                <h2>Personel Durumu</h2>
+
+                                <p>
+                                    Departmanlara göre personel
+                                </p>
+                            </div>
+
+                            <a href="@Url.Action("Index", "BOIEmployees")"
+                               class="text-link">
+                                Yönet →
+                            </a>
+
+                        </div>
+
+                        <div class="staff-summary">
+
+                            <div>
+                                <span>🧹</span>
+                                <strong>Temizlik</strong>
+                                <b>0</b>
+                            </div>
+
+                            <div>
+                                <span>🔧</span>
+                                <strong>Bakım</strong>
+                                <b>0</b>
+                            </div>
+
+                            <div>
+                                <span>🚗</span>
+                                <strong>Vale</strong>
+                                <b>0</b>
+                            </div>
+
+                            <div>
+                                <span>📅</span>
+                                <strong>Aktiviteler</strong>
+                                <b>0</b>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                </div>
+
+            </div>
+
+            <section class="panel tasks-panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h2>Yaklaşan Etkinlikler</h2>
+
+                        <p>
+                            Otelde planlanan etkinlikleri buradan takip edin.
+                        </p>
+                    </div>
+
+                    <a href="/Activities"
+                       class="text-link">
+                        Tüm etkinlikler →
+                    </a>
+
+                </div>
+
+                <div class="empty-tasks">
+
+                    <div class="empty-symbol">
+                        📅
+                    </div>
+
+                    <strong>
+                        Henüz planlanmış etkinlik bulunmuyor
+                    </strong>
+
+                    <span>
+                        Yeni bir etkinlik oluşturulduğunda burada görüntülenecek.
+                    </span>
+
+                    <a href="/Activities"
+                       class="secondary-btn"
+                       style="margin-top:15px; text-decoration:none;">
+                        + Etkinlik Ekle
+                    </a>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+</html>

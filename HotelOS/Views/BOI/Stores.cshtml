@@ -1,0 +1,1161 @@
+﻿@model List<HotelOS.Models.Store>
+
+@{
+    ViewData["Title"] = "Mağazalar";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mağazalar - HotelOS</title>
+    <link rel="stylesheet" href="~/css/stores.css" />
+</head>
+
+<body>
+
+    <div class="stores-page">
+
+        <header class="stores-header">
+            <div>
+                <div class="breadcrumb">HotelOS / BOİ Müdürü / Mağazalar</div>
+                <h1>🏪 Mağazalar</h1>
+                <p>Otel bünyesinde bulunan mağazaları ve kiralama bilgilerini yönetin.</p>
+            </div>
+
+            <a href="/BOI" class="back-btn">← Dashboard</a>
+        </header>
+
+       
+        <section class="summary-grid">
+
+            <button type="button"
+                    class="summary-card clickable active-card"
+                    onclick="setCardFilter('all', this)">
+
+                <div class="summary-icon blue">🏪</div>
+
+                <div>
+                    <span>Toplam Mağaza</span>
+                    <strong id="totalCount">0</strong>
+                </div>
+
+            </button>
+
+            <button type="button"
+                    class="summary-card clickable"
+                    onclick="setCardFilter('open', this)">
+
+                <div class="summary-icon green">✓</div>
+
+                <div>
+                    <span>Açık Mağaza</span>
+                    <strong id="openCount">0</strong>
+                </div>
+
+            </button>
+
+            <button type="button"
+                    class="summary-card clickable"
+                    onclick="setCardFilter('closed', this)">
+
+                <div class="summary-icon orange">⏸</div>
+
+                <div>
+                    <span>Kapalı Mağaza</span>
+                    <strong id="closedCount">0</strong>
+                </div>
+
+            </button>
+
+            <button type="button"
+                    class="summary-card clickable"
+                    onclick="setCardFilter('rent', this)">
+
+                <div class="summary-icon purple">₺</div>
+
+                <div>
+                    <span>Toplam Aylık Kira</span>
+                    <strong id="rentTotal">₺0</strong>
+                </div>
+
+            </button>
+
+        </section>
+
+      
+        <section class="panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <h2>Mağaza Listesi</h2>
+                    <p>Giriş katındaki mağazaları görüntüleyin ve yönetin.</p>
+                </div>
+
+                <button type="button"
+                        class="primary-btn"
+                        onclick="openStoreForm()">
+                    + Mağaza Ekle
+                </button>
+
+            </div>
+
+            <div class="filters">
+
+                <div class="search-box">
+                    <span>🔎</span>
+                    <input type="text"
+                           id="searchInput"
+                           placeholder="Mağaza ara..." />
+                </div>
+
+                <select id="typeFilter">
+                    <option value="">Tüm Türler</option>
+                    <option>Giyim</option>
+                    <option>Market</option>
+                    <option>Takı</option>
+                    <option>Hediyelik</option>
+                    <option>Elektronik</option>
+                    <option>Kitap</option>
+                    <option>Turizm</option>
+                    <option>Güzellik</option>
+                    <option>Diğer</option>
+                </select>
+
+                <select id="statusFilter">
+                    <option value="">Tüm Durumlar</option>
+                    <option>Açık</option>
+                    <option>Kapalı</option>
+                    <option>Geçici Kapalı</option>
+                </select>
+
+                <button type="button"
+                        class="clear-btn"
+                        onclick="clearFilters()">
+                    Filtreleri Temizle
+                </button>
+
+            </div>
+
+            <div id="storeList"></div>
+
+        </section>
+
+    </div>
+
+
+    <div id="storeModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2 id="modalTitle">Yeni Mağaza</h2>
+                    <p>Otel bünyesindeki mağaza bilgilerini girin.</p>
+                </div>
+
+                <button type="button"
+                        class="close-btn"
+                        onclick="closeStoreForm()">
+                    ×
+                </button>
+
+            </div>
+
+            <form id="storeForm">
+
+                <input type="hidden" id="editId" />
+
+                <div class="form-group">
+                    <label for="storeName">Mağaza Adı</label>
+
+                    <input type="text"
+                           id="storeName"
+                           placeholder="Örn. Hotel Shop"
+                           required />
+                </div>
+
+                <div class="form-row">
+
+                    <div class="form-group">
+                        <label for="storeType">Mağaza Türü</label>
+
+                        <select id="storeType" required>
+                            <option value="">Tür seçiniz</option>
+                            <option>Giyim</option>
+                            <option>Market</option>
+                            <option>Takı</option>
+                            <option>Hediyelik</option>
+                            <option>Elektronik</option>
+                            <option>Kitap</option>
+                            <option>Turizm</option>
+                            <option>Güzellik</option>
+                            <option>Diğer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="storeStatus">Durum</label>
+
+                        <select id="storeStatus">
+                            <option>Açık</option>
+                            <option>Kapalı</option>
+                            <option>Geçici Kapalı</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="storeRent">
+                            Aylık Kira (₺)
+                        </label>
+
+                        <input type="number"
+                               id="storeRent"
+                               min="0"
+                               step="0.01"
+                               placeholder="Örn. 25000" />
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="storePhone">
+                            Telefon
+                        </label>
+
+                        <input type="tel"
+                               id="storePhone"
+                               placeholder="05xx xxx xx xx" />
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="responsible">
+                        Sorumlu Kişi
+                    </label>
+
+                    <input type="text"
+                           id="responsible"
+                           placeholder="Mağaza sorumlusu" />
+
+                </div>
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="openingTime">
+                            Açılış Saati
+                        </label>
+
+                        <input type="time"
+                               id="openingTime" />
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="closingTime">
+                            Kapanış Saati
+                        </label>
+
+                        <input type="time"
+                               id="closingTime" />
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="description">
+                        Açıklama
+                    </label>
+
+                    <textarea id="description"
+                              rows="4"
+                              placeholder="Mağaza hakkında açıklama..."></textarea>
+
+                </div>
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            class="secondary-btn"
+                            onclick="closeStoreForm()">
+                        Vazgeç
+                    </button>
+
+                    <button type="submit"
+                            class="primary-btn"
+                            id="saveButton">
+                        Mağazayı Kaydet
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        let stores = @Html.Raw(
+                        System.Text.Json.JsonSerializer.Serialize(
+                                Model ?? new List<HotelOS.Models.Store>()
+                        )
+                );
+
+        let currentCardFilter = "all";
+
+        const searchInput =
+            document.getElementById("searchInput");
+
+        const typeFilter =
+            document.getElementById("typeFilter");
+
+        const statusFilter =
+            document.getElementById("statusFilter");
+
+        function normalizeStore(store) {
+
+            return {
+
+                id: store.Id ?? store.id,
+
+                name:
+                    store.Name ??
+                    store.name ??
+                    "",
+
+                type:
+                    store.Type ??
+                    store.type ??
+                    "",
+
+                status:
+                    store.Status ??
+                    store.status ??
+                    "Açık",
+
+                rent:
+                    Number(
+                        store.Rent ??
+                        store.rent ??
+                        0
+                    ),
+
+                responsible:
+                    store.Responsible ??
+                    store.responsible ??
+                    "",
+
+                phone:
+                    store.Phone ??
+                    store.phone ??
+                    "",
+
+                openingTime:
+                    normalizeTime(
+                        store.OpeningTime ??
+                        store.openingTime
+                    ),
+
+                closingTime:
+                    normalizeTime(
+                        store.ClosingTime ??
+                        store.closingTime
+                    ),
+
+                description:
+                    store.Description ??
+                    store.description ??
+                    ""
+            };
+        }
+
+        function normalizeTime(value) {
+
+            if (!value) {
+                return "";
+            }
+
+            return String(value).substring(0, 5);
+        }
+
+        stores =
+            stores.map(normalizeStore);
+
+        function openStoreForm() {
+
+            document
+                .getElementById("storeForm")
+                .reset();
+
+            document
+                .getElementById("editId")
+                .value = "";
+
+            document
+                .getElementById("modalTitle")
+                .textContent = "Yeni Mağaza";
+
+            document
+                .getElementById("saveButton")
+                .textContent = "Mağazayı Kaydet";
+
+            document
+                .getElementById("storeModal")
+                .classList.add("show");
+        }
+
+        function closeStoreForm() {
+
+            document
+                .getElementById("storeModal")
+                .classList.remove("show");
+        }
+
+        function setCardFilter(filter, button) {
+
+            currentCardFilter = filter;
+
+            document
+                .querySelectorAll(".summary-card")
+                .forEach(function (card) {
+
+                    card.classList.remove(
+                        "active-card"
+                    );
+
+                });
+
+            button.classList.add("active-card");
+
+            renderStores();
+        }
+
+        function getFilteredStores() {
+
+            let result =
+                stores.slice();
+
+            const search =
+                searchInput.value
+                    .trim()
+                    .toLowerCase();
+
+            const type =
+                typeFilter.value;
+
+            const status =
+                statusFilter.value;
+
+            if (search) {
+
+                result =
+                    result.filter(function (store) {
+
+                        return (
+                            store.name
+                                .toLowerCase()
+                                .includes(search) ||
+
+                            store.type
+                                .toLowerCase()
+                                .includes(search) ||
+
+                            store.responsible
+                                .toLowerCase()
+                                .includes(search)
+                        );
+
+                    });
+            }
+
+            if (type) {
+
+                result =
+                    result.filter(
+                        x => x.type === type
+                    );
+            }
+
+            if (status) {
+
+                result =
+                    result.filter(
+                        x => x.status === status
+                    );
+            }
+
+            if (currentCardFilter === "open") {
+
+                result =
+                    result.filter(
+                        x => x.status === "Açık"
+                    );
+
+            } else if (currentCardFilter === "closed") {
+
+                result =
+                    result.filter(
+                        x =>
+                            x.status === "Kapalı" ||
+                            x.status === "Geçici Kapalı"
+                    );
+
+            } else if (currentCardFilter === "rent") {
+
+                result =
+                    result.filter(
+                        x => x.rent > 0
+                    );
+            }
+
+            return result;
+        }
+
+        function renderStores() {
+
+            const list =
+                document.getElementById(
+                    "storeList"
+                );
+
+            const filtered =
+                getFilteredStores();
+
+            list.innerHTML = "";
+
+            if (filtered.length === 0) {
+
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🏪</div>
+                        <h3>Mağaza bulunamadı</h3>
+                        <p>Seçtiğiniz filtrelere uygun mağaza bulunmuyor.</p>
+
+                        <button type="button"
+                                class="primary-btn"
+                                onclick="openStoreForm()">
+                            + Mağaza Ekle
+                        </button>
+                    </div>
+                `;
+
+                return;
+            }
+
+            filtered.forEach(function (store) {
+
+                const card =
+                    document.createElement("div");
+
+                card.className =
+                    "store-card";
+
+                card.innerHTML = `
+
+                    <div class="store-icon">
+                        🏪
+                    </div>
+
+                    <div class="store-main">
+
+                        <div class="store-title-row">
+
+                            <div>
+                                <h3>
+                                    ${escapeHtml(store.name)}
+                                </h3>
+
+                                <span class="store-type">
+                                    ${escapeHtml(store.type)}
+                                </span>
+                            </div>
+
+                            <span class="status ${getStatusClass(store.status)}">
+                                ${escapeHtml(store.status)}
+                            </span>
+
+                        </div>
+
+                        <div class="store-details">
+
+                            <span>
+                                💰
+                                Aylık Kira:
+                                <strong>
+                                    ${formatMoney(store.rent)}
+                                </strong>
+                            </span>
+
+                            <span>
+                                👤
+                                ${escapeHtml(
+                                    store.responsible ||
+                                    "Sorumlu belirtilmedi"
+                                )}
+                            </span>
+
+                            <span>
+                                📞
+                                ${escapeHtml(
+                                    store.phone ||
+                                    "Telefon belirtilmedi"
+                                )}
+                            </span>
+
+                            ${
+                                store.openingTime &&
+                                store.closingTime
+                                ?
+                                `<span>
+                                    🕐
+                                    ${escapeHtml(store.openingTime)}
+                                    -
+                                    ${escapeHtml(store.closingTime)}
+                                </span>`
+                                :
+                                ""
+                            }
+
+                        </div>
+
+                        ${
+                            store.description
+                            ?
+                            `<p class="store-description">
+                                ${escapeHtml(store.description)}
+                            </p>`
+                            :
+                            ""
+                        }
+
+                    </div>
+
+                    <div class="store-actions">
+
+                        <button type="button"
+                                class="edit-btn"
+                                onclick="editStore(${store.id})">
+                            Düzenle
+                        </button>
+
+                        <button type="button"
+                                class="delete-btn"
+                                onclick="deleteStore(${store.id})">
+                            Sil
+                        </button>
+
+                    </div>
+                `;
+
+                list.appendChild(card);
+            });
+        }
+
+        function editStore(id) {
+
+            const store =
+                stores.find(
+                    x => x.id === id
+                );
+
+            if (!store) {
+                return;
+            }
+
+            document.getElementById("editId").value =
+                store.id;
+
+            document.getElementById("storeName").value =
+                store.name;
+
+            document.getElementById("storeType").value =
+                store.type;
+
+            document.getElementById("storeStatus").value =
+                store.status;
+
+            document.getElementById("storeRent").value =
+                store.rent;
+
+            document.getElementById("responsible").value =
+                store.responsible;
+
+            document.getElementById("storePhone").value =
+                store.phone;
+
+            document.getElementById("openingTime").value =
+                store.openingTime;
+
+            document.getElementById("closingTime").value =
+                store.closingTime;
+
+            document.getElementById("description").value =
+                store.description;
+
+            document.getElementById("modalTitle").textContent =
+                "Mağazayı Düzenle";
+
+            document.getElementById("saveButton").textContent =
+                "Değişiklikleri Kaydet";
+
+            document
+                .getElementById("storeModal")
+                .classList.add("show");
+        }
+
+        document
+            .getElementById("storeForm")
+            .addEventListener(
+                "submit",
+                async function (event) {
+
+                    event.preventDefault();
+
+                    const name =
+                        document
+                            .getElementById("storeName")
+                            .value
+                            .trim();
+
+                    const type =
+                        document
+                            .getElementById("storeType")
+                            .value;
+
+                    const status =
+                        document
+                            .getElementById("storeStatus")
+                            .value;
+
+                    const rent =
+                        Number(
+                            document
+                                .getElementById("storeRent")
+                                .value || 0
+                        );
+
+                    const responsible =
+                        document
+                            .getElementById("responsible")
+                            .value
+                            .trim();
+
+                    const phone =
+                        document
+                            .getElementById("storePhone")
+                            .value
+                            .trim();
+
+                    const openingTime =
+                        document
+                            .getElementById("openingTime")
+                            .value;
+
+                    const closingTime =
+                        document
+                            .getElementById("closingTime")
+                            .value;
+
+                    const description =
+                        document
+                            .getElementById("description")
+                            .value
+                            .trim();
+
+                    const editId =
+                        document
+                            .getElementById("editId")
+                            .value;
+
+                    if (!name || !type) {
+
+                        alert(
+                            "Lütfen mağaza adı ve türünü girin."
+                        );
+
+                        return;
+                    }
+
+                    if (
+                        openingTime &&
+                        closingTime &&
+                        closingTime <= openingTime
+                    ) {
+
+                        alert(
+                            "Kapanış saati açılış saatinden sonra olmalıdır."
+                        );
+
+                        return;
+                    }
+
+                    const data = {
+
+                        Name: name,
+
+                        Type: type,
+
+                        Status: status,
+
+                        Rent: rent,
+
+                        Responsible: responsible,
+
+                        Phone: phone,
+
+                        OpeningTime:
+                            openingTime
+                                ? openingTime + ":00"
+                                : null,
+
+                        ClosingTime:
+                            closingTime
+                                ? closingTime + ":00"
+                                : null,
+
+                        Description: description
+                    };
+
+                    try {
+
+                        let response;
+
+                        if (editId) {
+
+                            response =
+                                await fetch(
+                                    "/Stores/Edit?id=" +
+                                    editId,
+                                    {
+                                        method: "PUT",
+
+                                        headers: {
+                                            "Content-Type":
+                                                "application/json"
+                                        },
+
+                                        body:
+                                            JSON.stringify({
+                                                Id:
+                                                    Number(editId),
+
+                                                ...data
+                                            })
+                                    }
+                                );
+
+                        } else {
+
+                            response =
+                                await fetch(
+                                    "/Stores/Create",
+                                    {
+                                        method: "POST",
+
+                                        headers: {
+                                            "Content-Type":
+                                                "application/json"
+                                        },
+
+                                        body:
+                                            JSON.stringify(data)
+                                    }
+                                );
+                        }
+
+                        if (!response.ok) {
+
+                            const errorText =
+                                await response.text();
+
+                            console.error(
+                                errorText
+                            );
+
+                            alert(
+                                "Mağaza kaydedilemedi."
+                            );
+
+                            return;
+                        }
+
+                        const savedStore =
+                            await response.json();
+
+                        const normalized =
+                            normalizeStore(
+                                savedStore
+                            );
+
+                        if (editId) {
+
+                            const index =
+                                stores.findIndex(
+                                    x =>
+                                        x.id ===
+                                        Number(editId)
+                                );
+
+                            if (index !== -1) {
+
+                                stores[index] =
+                                    normalized;
+                            }
+
+                        } else {
+
+                            stores.push(
+                                normalized
+                            );
+                        }
+
+                        closeStoreForm();
+
+                        updateSummary();
+
+                        renderStores();
+
+                    } catch (error) {
+
+                        console.error(error);
+
+                        alert(
+                            "Sunucuya bağlanırken bir hata oluştu."
+                        );
+                    }
+                }
+            );
+
+        async function deleteStore(id) {
+
+            const store =
+                stores.find(
+                    x => x.id === id
+                );
+
+            if (!store) {
+                return;
+            }
+
+            if (
+                !confirm(
+                    '"' +
+                    store.name +
+                    '" mağazasını silmek istediğinize emin misiniz?'
+                )
+            ) {
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/Stores/Delete?id=" +
+                        id,
+                        {
+                            method: "DELETE"
+                        }
+                    );
+
+                if (!response.ok) {
+
+                    alert(
+                        "Mağaza silinemedi."
+                    );
+
+                    return;
+                }
+
+                stores =
+                    stores.filter(
+                        x => x.id !== id
+                    );
+
+                updateSummary();
+
+                renderStores();
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Sunucuya bağlanırken bir hata oluştu."
+                );
+            }
+        }
+
+        function updateSummary() {
+
+            const total =
+                stores.length;
+
+            const open =
+                stores.filter(
+                    x => x.status === "Açık"
+                ).length;
+
+            const closed =
+                stores.filter(
+                    x =>
+                        x.status === "Kapalı" ||
+                        x.status === "Geçici Kapalı"
+                ).length;
+
+            const rent =
+                stores.reduce(
+                    (sum, store) =>
+                        sum + Number(store.rent || 0),
+                    0
+                );
+
+            document.getElementById(
+                "totalCount"
+            ).textContent = total;
+
+            document.getElementById(
+                "openCount"
+            ).textContent = open;
+
+            document.getElementById(
+                "closedCount"
+            ).textContent = closed;
+
+            document.getElementById(
+                "rentTotal"
+            ).textContent =
+                formatMoney(rent);
+        }
+
+        function formatMoney(value) {
+
+            return new Intl.NumberFormat(
+                "tr-TR",
+                {
+                    style: "currency",
+                    currency: "TRY",
+                    maximumFractionDigits: 2
+                }
+            ).format(
+                Number(value || 0)
+            );
+        }
+
+        function getStatusClass(status) {
+
+            if (status === "Açık") {
+                return "open";
+            }
+
+            if (status === "Kapalı") {
+                return "closed";
+            }
+
+            if (status === "Geçici Kapalı") {
+                return "temporary";
+            }
+
+            return "";
+        }
+
+        function clearFilters() {
+
+            searchInput.value = "";
+
+            typeFilter.value = "";
+
+            statusFilter.value = "";
+
+            currentCardFilter = "all";
+
+            document
+                .querySelectorAll(".summary-card")
+                .forEach(function (card) {
+
+                    card.classList.remove(
+                        "active-card"
+                    );
+
+                });
+
+            document
+                .querySelector(".summary-card")
+                .classList.add(
+                    "active-card"
+                );
+
+            renderStores();
+        }
+
+        searchInput.addEventListener(
+            "input",
+            renderStores
+        );
+
+        typeFilter.addEventListener(
+            "change",
+            renderStores
+        );
+
+        statusFilter.addEventListener(
+            "change",
+            renderStores
+        );
+
+        window.addEventListener(
+            "click",
+            function (event) {
+
+                const modal =
+                    document.getElementById(
+                        "storeModal"
+                    );
+
+                if (
+                    event.target === modal
+                ) {
+                    closeStoreForm();
+                }
+            }
+        );
+
+        function escapeHtml(text) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            div.textContent =
+                text || "";
+
+            return div.innerHTML;
+        }
+
+        updateSummary();
+
+        renderStores();
+
+    </script>
+
+</body>
+</html>

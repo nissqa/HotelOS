@@ -1,0 +1,217 @@
+﻿@model HotelOS.Models.Room
+
+@{
+    ViewData["Title"] = "Oda Düzenle";
+}
+
+<div class="edit-page">
+
+    <div class="edit-card">
+
+        <div class="header">
+            <div class="icon">✏️</div>
+
+            <div>
+                <h1>Oda Düzenle</h1>
+                <p>Oda bilgilerini güncelleyin.</p>
+            </div>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="error">
+                ⚠️ @ViewBag.Error
+            </div>
+        }
+
+        <form method="post">
+
+            <input type="hidden" name="id" value="@Model.Id" />
+
+            <div class="form-group">
+                <label>Oda Numarası</label>
+
+                <input type="text"
+                       name="roomNumber"
+                       value="@Model.RoomNumber"
+                       required />
+            </div>
+
+            <div class="form-group">
+                <label>Oda Tipi</label>
+
+                <select name="roomTypeId" required>
+
+                    @foreach (var type in ViewBag.RoomTypes)
+                    {
+                        <option value="@type.Id"
+                                selected="@(type.Id == Model.RoomTypeId)">
+                            @type.TypeName - ₺@type.PricePerNight.ToString("N0") / gece
+                        </option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Kat</label>
+
+                <input type="number"
+                       name="floor"
+                       min="0"
+                       max="10"
+                       value="@Model.Floor"
+                       required />
+            </div>
+
+            <div class="form-group">
+                <label>Açıklama</label>
+
+                <textarea name="description">@Model.Description</textarea>
+            </div>
+
+            <div class="buttons">
+
+                <a href="/RoomsView" class="cancel">
+                    ← Vazgeç
+                </a>
+
+                <button type="submit" class="save">
+                    ✓ Değişiklikleri Kaydet
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<style>
+
+    body {
+        margin: 0;
+        background: #f6f7fb;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    .edit-page {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px;
+    }
+
+    .edit-card {
+        width: 600px;
+        background: white;
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 10px 35px rgba(0,0,0,.08);
+    }
+
+    .header {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        background: #eeeafd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+    }
+
+    h1 {
+        margin: 0;
+        color: #1f2937;
+    }
+
+    .header p {
+        margin: 5px 0 0;
+        color: #6b7280;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #374151;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 15px;
+        outline: none;
+        font-family: inherit;
+        box-sizing: border-box;
+    }
+
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #6d5dfc;
+        }
+
+    .error {
+        background: #fee2e2;
+        color: #b91c1c;
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    .cancel,
+    .save {
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .cancel {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .save {
+        border: none;
+        background: #6d5dfc;
+        color: white;
+    }
+
+        .save:hover {
+            background: #5848e8;
+        }
+
+</style>

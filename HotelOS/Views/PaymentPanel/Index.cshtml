@@ -1,0 +1,1288 @@
+﻿@model List<HotelOS.Models.Payment>
+
+@{
+    ViewData["Title"] = "Ödemeler";
+}
+
+<div class="payments-page">
+
+    <div class="page-header">
+        <div>
+            <h1>💳 Ödemeler</h1>
+            <p>Otel ödeme işlemlerini ve ödeme durumlarını yönetin.</p>
+        </div>
+    </div>
+
+    <div class="stats">
+
+        <button type="button"
+                class="stat-card stat-button active-card"
+                data-filter="all">
+
+            <div class="stat-icon purple">💰</div>
+
+            <div class="stat-content">
+                <span>Toplam Ödeme</span>
+                <strong>
+                    ₺@Convert.ToDecimal(ViewBag.TotalPayments ?? 0).ToString("N0")
+                </strong>
+                <small>Tüm ödemeleri görüntüle →</small>
+            </div>
+
+        </button>
+
+        <button type="button"
+                class="stat-card stat-button"
+                data-filter="today">
+
+            <div class="stat-icon blue">📅</div>
+
+            <div class="stat-content">
+                <span>Bugünkü Ödeme</span>
+                <strong>
+                    ₺@Convert.ToDecimal(ViewBag.TodayPayments ?? 0).ToString("N0")
+                </strong>
+                <small>Bugünkü ödemeleri görüntüle →</small>
+            </div>
+
+        </button>
+
+        <button type="button"
+                class="stat-card stat-button"
+                data-filter="paid">
+
+            <div class="stat-icon green">✓</div>
+
+            <div class="stat-content">
+                <span>Ödenen İşlemler</span>
+                <strong>
+                    @ViewBag.PaidPayments
+                </strong>
+                <small>Ödenen işlemleri görüntüle →</small>
+            </div>
+
+        </button>
+
+        <button type="button"
+                class="stat-card stat-button"
+                data-filter="pending">
+
+            <div class="stat-icon orange">⏳</div>
+
+            <div class="stat-content">
+                <span>Bekleyen İşlemler</span>
+                <strong>
+                    @ViewBag.PendingPayments
+                </strong>
+                <small>Bekleyen işlemleri görüntüle →</small>
+            </div>
+
+        </button>
+
+    </div>
+
+    <div id="filterPanel" class="filter-panel">
+
+        <div>
+            <strong id="filterTitle">Tüm Ödemeler</strong>
+            <span id="filterDescription">
+                Sistemdeki tüm ödeme kayıtları gösteriliyor.
+            </span>
+        </div>
+
+        <button type="button" id="clearFilter">
+            ✕ Filtreyi Temizle
+        </button>
+
+    </div>
+
+    <div class="table-card">
+
+        <div class="table-top">
+
+            <div>
+                <h2>Ödeme Listesi</h2>
+                <p id="resultText">
+                    Sistemde kayıtlı ödeme işlemleri
+                </p>
+            </div>
+
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text"
+                       id="paymentSearch"
+                       placeholder="Müşteri, oda, işlem no veya ödeme yöntemi ara..." />
+            </div>
+
+        </div>
+
+        <div class="table-container">
+
+            <table id="paymentTable">
+
+                <thead>
+                    <tr>
+                        <th>Müşteri</th>
+                        <th>Oda</th>
+                        <th>Tutar</th>
+                        <th>Ödeme Yöntemi</th>
+                        <th>Ödeme Tarihi</th>
+                        <th>İşlem No</th>
+                        <th>Durum</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var payment in Model)
+                        {
+                            var customer = payment.Reservation?.Customer;
+
+                            var customerName = customer != null
+                            ? $"{customer.FirstName} {customer.LastName}"
+                            : "Bilinmiyor";
+
+                            var roomNumber = payment.Reservation?.Room?.RoomNumber ?? "-";
+
+                            var status = payment.Status ?? "Belirsiz";
+
+                            var firstLetter = customer != null &&
+                            !string.IsNullOrEmpty(customer.FirstName)
+                            ? customer.FirstName.Substring(0, 1).ToUpper()
+                            : "?";
+
+                            var lastLetter = customer != null &&
+                            !string.IsNullOrEmpty(customer.LastName)
+                            ? customer.LastName.Substring(0, 1).ToUpper()
+                            : "";
+
+                            <tr class="payment-row"
+                                data-status="@status"
+                                data-date="@payment.PaymentDate.ToString("yyyy-MM-dd")">
+
+                                <td>
+                                    <div class="customer-info">
+
+                                        <div class="avatar">
+                                            @firstLetter@lastLetter
+                                        </div>
+
+                                        <div>
+                                            <strong>@customerName</strong>
+
+                                            @if (payment.Reservation != null)
+                                            {
+                                                <small>
+                                                    Rezervasyon #@payment.Reservation.Id
+                                                </small>
+                                            }
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <span class="room-badge">
+                                        🛏️ @roomNumber
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <strong class="amount">
+                                        ₺@payment.Amount.ToString("N2")
+                                    </strong>
+                                </td>
+
+                                <td>
+
+                                    @if (string.IsNullOrWhiteSpace(payment.PaymentMethod))
+                                    {
+                                        <span class="muted">-</span>
+                                    }
+                                    else if (payment.PaymentMethod.Contains(
+                                    "kart",
+                                    StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="payment-method">
+                                            💳 @payment.PaymentMethod
+                                        </span>
+                                    }
+                                    else if (payment.PaymentMethod.Contains(
+                                    "nakit",
+                                    StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <span class="payment-method">
+                                            💵 @payment.PaymentMethod
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="payment-method">
+                                            💰 @payment.PaymentMethod
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+                                    <div class="date-info">
+                                        <strong>
+                                            @payment.PaymentDate.ToString("dd.MM.yyyy")
+                                        </strong>
+
+                                        <small>
+                                            @payment.PaymentDate.ToString("HH:mm")
+                                        </small>
+                                    </div>
+                                </td>
+
+                                <td>
+
+                                    @if (!string.IsNullOrWhiteSpace(payment.TransactionNo))
+                                    {
+                                        <span class="transaction">
+                                            @payment.TransactionNo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="muted">-</span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    @if (payment.Status == "Ödendi")
+                                    {
+                                        <span class="status paid">
+                                            ● Ödendi
+                                        </span>
+                                    }
+                                    else if (payment.Status == "Bekliyor")
+                                    {
+                                        <span class="status pending">
+                                            ● Bekliyor
+                                        </span>
+                                    }
+                                    else if (payment.Status == "İptal")
+                                    {
+                                        <span class="status cancelled">
+                                            ● İptal
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status unknown">
+                                            ● @status
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+                                    <button type="button"
+                                            class="action-btn"
+                                            onclick="openPaymentActions(@payment.Id)">
+                                        ⚙️ İşlem
+                                    </button>
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr id="emptyDatabaseRow">
+                            <td colspan="8">
+
+                                <div class="empty">
+                                    <div class="empty-icon">💳</div>
+
+                                    <strong>
+                                        Henüz ödeme bulunmuyor
+                                    </strong>
+
+                                    <span>
+                                        Sistemde kayıtlı herhangi bir ödeme işlemi bulunmamaktadır.
+                                    </span>
+                                </div>
+
+                            </td>
+                        </tr>
+                    }
+
+                    <tr id="noResultsRow" style="display:none;">
+                        <td colspan="8">
+
+                            <div class="empty">
+                                <div class="empty-icon">🔍</div>
+
+                                <strong>
+                                    Sonuç bulunamadı
+                                </strong>
+
+                                <span>
+                                    Seçtiğiniz filtre veya arama kriterlerine uygun ödeme bulunamadı.
+                                </span>
+                            </div>
+
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="paymentActionModal" class="payment-modal">
+
+    <div class="payment-modal-content">
+
+        <div class="payment-modal-header">
+
+            <div>
+                <h3>💳 Ödeme İşlemi</h3>
+
+                <span id="modalTransaction">
+                    İşlem bilgileri
+                </span>
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    onclick="closePaymentModal()">
+                ✕
+            </button>
+
+        </div>
+
+        <div class="payment-modal-body">
+
+            <div class="modal-loading" id="modalLoading">
+                Ödeme bilgileri getiriliyor...
+            </div>
+
+            <div id="paymentDetailsContent" style="display:none;">
+
+                <div class="modal-info-grid">
+
+                    <div class="modal-info-item">
+                        <span>Müşteri</span>
+                        <strong id="modalCustomer">-</strong>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <span>Oda</span>
+                        <strong id="modalRoom">-</strong>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <span>Tutar</span>
+                        <strong id="modalAmount">-</strong>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <span>Ödeme Yöntemi</span>
+                        <strong id="modalPaymentMethod">-</strong>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <span>Ödeme Tarihi</span>
+                        <strong id="modalPaymentDate">-</strong>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <span>İşlem No</span>
+                        <strong id="modalTransactionNo">-</strong>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <span>Durum</span>
+                        <strong id="modalStatus">-</strong>
+                    </div>
+
+                    <div class="modal-info-item">
+                        <span>Rezervasyon</span>
+                        <strong id="modalReservation">-</strong>
+                    </div>
+
+                </div>
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            id="cancelPaymentBtn"
+                            class="cancel-payment-btn">
+                        ❌ Ödemeyi İptal Et
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: #f5f7fb;
+    }
+
+    .payments-page {
+        padding: 30px;
+        min-height: 100vh;
+        color: #1f2937;
+    }
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .page-header p {
+            margin-top: 7px;
+            color: #6b7280;
+        }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        background: white;
+        border: 2px solid transparent;
+        border-radius: 15px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.06);
+    }
+
+    .stat-button {
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .2s ease;
+    }
+
+        .stat-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(0,0,0,.10);
+        }
+
+        .stat-button.active-card {
+            border-color: #6366f1;
+            box-shadow: 0 5px 20px rgba(99,102,241,.15);
+        }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .purple {
+        background: #eef2ff;
+    }
+
+    .blue {
+        background: #dbeafe;
+    }
+
+    .green {
+        background: #dcfce7;
+    }
+
+    .orange {
+        background: #ffedd5;
+    }
+
+    .stat-content {
+        min-width: 0;
+    }
+
+    .stat-card span {
+        display: block;
+        color: #6b7280;
+        font-size: 13px;
+        margin-bottom: 5px;
+    }
+
+    .stat-card strong {
+        display: block;
+        font-size: 23px;
+    }
+
+    .stat-card small {
+        display: block;
+        margin-top: 6px;
+        color: #6b7280;
+        font-size: 11px;
+    }
+
+    .filter-panel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #eef2ff;
+        border: 1px solid #c7d2fe;
+        padding: 14px 18px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+        .filter-panel strong {
+            display: block;
+            color: #3730a3;
+            font-size: 14px;
+        }
+
+        .filter-panel span {
+            display: block;
+            margin-top: 3px;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .filter-panel button {
+            border: 1px solid #c7d2fe;
+            background: white;
+            color: #4338ca;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+            .filter-panel button:hover {
+                background: #e0e7ff;
+            }
+
+    .table-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 3px 15px rgba(0,0,0,.06);
+    }
+
+    .table-top {
+        padding: 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        border-bottom: 1px solid #eee;
+    }
+
+        .table-top h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .table-top p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+    .search-box {
+        width: 360px;
+        padding: 10px 13px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+    }
+
+        .search-box:focus-within {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.08);
+        }
+
+        .search-box input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            background: transparent;
+        }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        min-width: 1050px;
+        border-collapse: collapse;
+    }
+
+    th {
+        padding: 15px 18px;
+        background: #fafafa;
+        color: #6b7280;
+        text-align: left;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 15px 18px;
+        border-top: 1px solid #f1f1f1;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .payment-row {
+        transition: .15s;
+    }
+
+        .payment-row:hover {
+            background: #fafafa;
+        }
+
+    .customer-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 180px;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e0e7ff;
+        color: #4338ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+
+    .customer-info strong {
+        display: block;
+    }
+
+    .customer-info small {
+        display: block;
+        color: #9ca3af;
+        margin-top: 3px;
+        font-size: 11px;
+    }
+
+    .room-badge {
+        background: #f3f4f6;
+        padding: 6px 9px;
+        border-radius: 8px;
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+    .amount {
+        white-space: nowrap;
+        color: #111827;
+    }
+
+    .payment-method {
+        white-space: nowrap;
+    }
+
+    .muted {
+        color: #9ca3af;
+    }
+
+    .date-info strong {
+        display: block;
+        font-size: 13px;
+    }
+
+    .date-info small {
+        display: block;
+        color: #9ca3af;
+        margin-top: 3px;
+        font-size: 11px;
+    }
+
+    .transaction {
+        font-family: monospace;
+        font-size: 12px;
+        background: #f3f4f6;
+        padding: 5px 7px;
+        border-radius: 6px;
+        white-space: nowrap;
+    }
+
+    .status {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .status.paid {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status.pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status.cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status.unknown {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+    .detail-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: #eef2ff;
+        color: #4338ca;
+        text-decoration: none;
+        transition: .2s;
+    }
+
+        .detail-btn:hover {
+            background: #e0e7ff;
+            transform: translateY(-1px);
+        }
+
+    .empty {
+        padding: 60px 20px;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    .empty-icon {
+        font-size: 38px;
+        margin-bottom: 12px;
+    }
+
+    .empty strong {
+        display: block;
+        color: #6b7280;
+        font-size: 15px;
+    }
+
+    .empty span {
+        display: block;
+        margin-top: 5px;
+        font-size: 13px;
+    }
+
+    .action-btn {
+        border: none;
+        background: #eef2ff;
+        color: #4338ca;
+        padding: 9px 13px;
+        border-radius: 9px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        transition: .2s;
+    }
+
+        .action-btn:hover {
+            background: #e0e7ff;
+            transform: translateY(-1px);
+        }
+
+    .payment-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, .55);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+        .payment-modal.show {
+            display: flex;
+        }
+
+    .payment-modal-content {
+        width: 100%;
+        max-width: 650px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,.20);
+        overflow: hidden;
+    }
+
+    .payment-modal-header {
+        padding: 20px 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #eee;
+    }
+
+        .payment-modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .payment-modal-header span {
+            display: block;
+            margin-top: 4px;
+            color: #9ca3af;
+            font-size: 11px;
+        }
+
+    .modal-close {
+        width: 35px;
+        height: 35px;
+        border: none;
+        border-radius: 8px;
+        background: #f3f4f6;
+        color: #6b7280;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+        .modal-close:hover {
+            background: #e5e7eb;
+        }
+
+    .payment-modal-body {
+        padding: 22px;
+    }
+
+    .modal-loading {
+        padding: 40px;
+        text-align: center;
+        color: #6b7280;
+    }
+
+    .modal-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .modal-info-item {
+        padding: 14px;
+        background: #f8fafc;
+        border: 1px solid #eef2f7;
+        border-radius: 10px;
+    }
+
+        .modal-info-item span {
+            display: block;
+            color: #9ca3af;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .modal-info-item strong {
+            display: block;
+            color: #1f2937;
+            font-size: 13px;
+            word-break: break-word;
+        }
+
+    .modal-actions {
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .cancel-payment-btn {
+        border: none;
+        background: #fee2e2;
+        color: #b91c1c;
+        padding: 10px 15px;
+        border-radius: 9px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+        .cancel-payment-btn:hover {
+            background: #fecaca;
+        }
+
+    @@media (max-width: 1100px) {
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .payments-page {
+            padding: 20px;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .table-top {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+        .filter-panel {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+    }
+
+    @@media (max-width: 600px) {
+        .modal-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .payment-modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    }
+</style>
+
+<script>
+    let currentFilter = "all";
+    let selectedPaymentId = null;
+
+    const searchInput = document.getElementById("paymentSearch");
+    const filterButtons = document.querySelectorAll(".stat-button");
+    const clearFilter = document.getElementById("clearFilter");
+    const filterTitle = document.getElementById("filterTitle");
+    const filterDescription = document.getElementById("filterDescription");
+    const resultText = document.getElementById("resultText");
+    const noResultsRow = document.getElementById("noResultsRow");
+
+    const paymentActionModal = document.getElementById("paymentActionModal");
+    const modalLoading = document.getElementById("modalLoading");
+    const paymentDetailsContent = document.getElementById("paymentDetailsContent");
+    const cancelPaymentBtn = document.getElementById("cancelPaymentBtn");
+
+    filterButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            currentFilter = this.getAttribute("data-filter");
+
+            filterButtons.forEach(btn => {
+                btn.classList.remove("active-card");
+            });
+
+            this.classList.add("active-card");
+
+            applyFilters();
+        });
+    });
+
+    clearFilter.addEventListener("click", function () {
+        currentFilter = "all";
+
+        filterButtons.forEach(btn => {
+            btn.classList.remove("active-card");
+        });
+
+        const allButton = document.querySelector('.stat-button[data-filter="all"]');
+
+        if (allButton) {
+            allButton.classList.add("active-card");
+        }
+
+        if (searchInput) {
+            searchInput.value = "";
+        }
+
+        applyFilters();
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener("input", applyFilters);
+    }
+
+    function applyFilters() {
+        const rows = document.querySelectorAll(".payment-row");
+
+        const searchText = searchInput
+            ? searchInput.value.toLowerCase().trim()
+            : "";
+
+        const now = new Date();
+
+        const today =
+            now.getFullYear() +
+            "-" +
+            String(now.getMonth() + 1).padStart(2, "0") +
+            "-" +
+            String(now.getDate()).padStart(2, "0");
+
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const status = (row.dataset.status || "").trim();
+            const date = row.dataset.date || "";
+            const text = row.innerText.toLowerCase();
+
+            let matchesFilter = true;
+
+            if (currentFilter === "today") {
+                matchesFilter = date === today;
+            }
+            else if (currentFilter === "paid") {
+                matchesFilter = status === "Ödendi";
+            }
+            else if (currentFilter === "pending") {
+                matchesFilter = status === "Bekliyor";
+            }
+
+            const matchesSearch = text.includes(searchText);
+            const show = matchesFilter && matchesSearch;
+
+            row.style.display = show ? "" : "none";
+
+            if (show) {
+                visibleCount++;
+            }
+        });
+
+        if (noResultsRow) {
+            noResultsRow.style.display =
+                visibleCount === 0 ? "" : "none";
+        }
+
+        updateFilterText(visibleCount);
+    }
+
+    function updateFilterText(count) {
+        if (currentFilter === "all") {
+            filterTitle.innerText = "💰 Tüm Ödemeler";
+            filterDescription.innerText =
+                "Sistemdeki tüm ödeme kayıtları gösteriliyor.";
+        }
+        else if (currentFilter === "today") {
+            filterTitle.innerText = "📅 Bugünkü Ödemeler";
+            filterDescription.innerText =
+                "Bugün gerçekleştirilen ödeme işlemleri gösteriliyor.";
+        }
+        else if (currentFilter === "paid") {
+            filterTitle.innerText = "✓ Ödenen İşlemler";
+            filterDescription.innerText =
+                "Durumu 'Ödendi' olan ödeme işlemleri gösteriliyor.";
+        }
+        else if (currentFilter === "pending") {
+            filterTitle.innerText = "⏳ Bekleyen İşlemler";
+            filterDescription.innerText =
+                "Durumu 'Bekliyor' olan ödeme işlemleri gösteriliyor.";
+        }
+
+        resultText.innerText =
+            count === 0
+                ? "Bu filtreye uygun ödeme bulunamadı."
+                : count + " ödeme işlemi gösteriliyor.";
+    }
+
+    async function openPaymentActions(paymentId) {
+        selectedPaymentId = paymentId;
+
+        paymentActionModal.classList.add("show");
+
+        modalLoading.style.display = "block";
+        modalLoading.innerText = "Ödeme bilgileri getiriliyor...";
+        paymentDetailsContent.style.display = "none";
+
+        try {
+            const response = await fetch(
+                `/api/payments/${paymentId}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Ödeme bilgileri alınamadı.");
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(
+                    data.message || "Ödeme bulunamadı."
+                );
+            }
+
+            document.getElementById("modalCustomer").innerText =
+                data.customer || "-";
+
+            document.getElementById("modalRoom").innerText =
+                data.room || "-";
+
+            document.getElementById("modalAmount").innerText =
+                "₺" +
+                Number(data.amount).toLocaleString(
+                    "tr-TR",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                );
+
+            document.getElementById("modalPaymentMethod").innerText =
+                data.paymentMethod || "-";
+
+            document.getElementById("modalPaymentDate").innerText =
+                data.paymentDate || "-";
+
+            document.getElementById("modalTransactionNo").innerText =
+                data.transactionNo || "-";
+
+            document.getElementById("modalStatus").innerText =
+                data.status || "-";
+
+            document.getElementById("modalReservation").innerText =
+                "#" + (data.reservationId || "-");
+
+            document.getElementById("modalTransaction").innerText =
+                data.transactionNo
+                    ? "İşlem No: " + data.transactionNo
+                    : "Ödeme #" + data.id;
+
+            if (data.status === "İptal") {
+                cancelPaymentBtn.style.display = "none";
+            }
+            else {
+                cancelPaymentBtn.style.display = "block";
+            }
+
+            modalLoading.style.display = "none";
+            paymentDetailsContent.style.display = "block";
+        }
+        catch (error) {
+            modalLoading.innerText = "❌ " + error.message;
+        }
+    }
+
+    function closePaymentModal() {
+        paymentActionModal.classList.remove("show");
+        selectedPaymentId = null;
+    }
+
+    paymentActionModal.addEventListener("click", function (event) {
+        if (event.target === paymentActionModal) {
+            closePaymentModal();
+        }
+    });
+
+    cancelPaymentBtn.addEventListener("click", async function () {
+        if (!selectedPaymentId) {
+            return;
+        }
+
+        const confirmed = confirm(
+            "Bu ödemeyi iptal etmek istediğinize emin misiniz?"
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            cancelPaymentBtn.disabled = true;
+            cancelPaymentBtn.innerText = "⏳ İptal ediliyor...";
+
+            const response = await fetch(
+                `/api/payments/${selectedPaymentId}/cancel`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.message || "Ödeme iptal edilemedi."
+                );
+            }
+
+            alert("✅ Ödeme başarıyla iptal edildi.");
+
+            closePaymentModal();
+            location.reload();
+        }
+        catch (error) {
+            alert("❌ " + error.message);
+
+            cancelPaymentBtn.disabled = false;
+            cancelPaymentBtn.innerText = "❌ Ödemeyi İptal Et";
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closePaymentModal();
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        applyFilters();
+    });
+</script>

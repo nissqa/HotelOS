@@ -1,0 +1,1110 @@
+﻿@model List<HotelOS.Models.TechnicalEquipment>
+
+@{
+    ViewData["Title"] = "Teknik Operasyon";
+
+    var equipments = Model ?? new List<HotelOS.Models.TechnicalEquipment>();
+
+    var totalCount = equipments.Count;
+    var activeCount = equipments.Count(e => e.Status == "Aktif");
+    var maintenanceCount = equipments.Count(e => e.Status == "Bakım Gerekiyor");
+    var faultyCount = equipments.Count(e => e.Status == "Arızalı");
+
+    var categories = equipments
+        .Select(e => e.Category)
+        .Where(c => !string.IsNullOrWhiteSpace(c))
+        .Distinct()
+        .OrderBy(c => c)
+        .ToList();
+
+    var maintenanceEmployees =
+        ViewBag.MaintenanceEmployees as List<HotelOS.Models.Employee>
+        ?? new List<HotelOS.Models.Employee>();
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Teknik Operasyon - HotelOS</title>
+
+    <link rel="stylesheet" href="~/css/technicaloperations.css" />
+
+</head>
+
+<body>
+
+    <div class="technical-app">
+
+        <main class="main">
+
+            <header class="topbar">
+
+                <div class="page-heading">
+
+                    <div class="breadcrumb">
+                        HotelOS / BOİ Müdürlüğü / Teknik Operasyon
+                    </div>
+
+                    <h1>Teknik Operasyon</h1>
+
+                    <p>
+                        Otelin teknik sistemlerini, ekipmanlarını ve periyodik kontrollerini yönetin.
+                    </p>
+
+                </div>
+
+                <div class="topbar-actions">
+
+                    <a href="/BOI" class="dashboard-btn">
+                        ← Dashboard'a Dön
+                    </a>
+
+                    <div class="top-user">
+
+                        <div class="top-avatar">
+                            B
+                        </div>
+
+                        <div>
+                            <strong>BOİ Müdürü</strong>
+                            <small>Operasyon Müdürü</small>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <section class="stats-grid">
+
+                <button type="button"
+                        class="stat-card stat-button"
+                        onclick="showStatus('all')">
+
+                    <div class="stat-top">
+                        <span class="stat-title">
+                            Toplam Sistem
+                        </span>
+
+                        <div class="stat-icon blue">
+                            ⚙️
+                        </div>
+                    </div>
+
+                    <div class="stat-number">
+                        @totalCount
+                    </div>
+
+                    <div class="stat-description">
+                        Tüm teknik ekipmanlar
+                    </div>
+
+                </button>
+
+
+                <button type="button"
+                        class="stat-card stat-button"
+                        onclick="showStatus('Aktif')">
+
+                    <div class="stat-top">
+
+                        <span class="stat-title">
+                            Aktif
+                        </span>
+
+                        <div class="stat-icon green">
+                            ✓
+                        </div>
+
+                    </div>
+
+                    <div class="stat-number">
+                        @activeCount
+                    </div>
+
+                    <div class="stat-description">
+                        Normal çalışan sistemler
+                    </div>
+
+                </button>
+
+
+                <button type="button"
+                        class="stat-card stat-button"
+                        onclick="showStatus('Bakım Gerekiyor')">
+
+                    <div class="stat-top">
+
+                        <span class="stat-title">
+                            Bakım Gerekiyor
+                        </span>
+
+                        <div class="stat-icon orange">
+                            🔧
+                        </div>
+
+                    </div>
+
+                    <div class="stat-number">
+                        @maintenanceCount
+                    </div>
+
+                    <div class="stat-description">
+                        Bakım bekleyen sistemler
+                    </div>
+
+                </button>
+
+
+                <button type="button"
+                        class="stat-card stat-button"
+                        onclick="showStatus('Kontrole Gönderildi')">
+
+                    <div class="stat-top">
+
+                        <span class="stat-title">
+                            Kontrole Gönderilenler
+                        </span>
+
+                        <div class="stat-icon orange">
+                            🔍
+                        </div>
+
+                    </div>
+
+                    <div class="stat-number">
+                        @equipments.Count(e => e.Status == "Kontrole Gönderildi")
+                    </div>
+
+                    <div class="stat-description">
+                        Kontrol bekleyen sistemler
+                    </div>
+
+                </button>
+
+            </section>
+
+
+
+            <section class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>Teknik Sistemler</h2>
+
+                        <p>
+                            Otelin teknik altyapısını ve ekipmanlarını yönetin.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="filters">
+
+                    <div class="search-box">
+
+                        <span>🔍</span>
+
+                        <input type="text"
+                               id="equipmentSearch"
+                               placeholder="Ekipman veya konum ara..."
+                               oninput="filterEquipment()" />
+
+                    </div>
+
+
+                    <select id="categoryFilter"
+                            onchange="filterEquipment()">
+
+                        <option value="all">
+                            Tüm Kategoriler
+                        </option>
+
+                        @foreach (var category in categories)
+                        {
+                            <option value="@category">
+                                @category
+                            </option>
+                        }
+
+                    </select>
+
+
+                    <select id="statusFilter"
+                            onchange="filterEquipment()">
+
+                        <option value="all">
+                            Tüm Durumlar
+                        </option>
+
+                        <option value="Aktif">
+                            Aktif
+                        </option>
+
+                        <option value="Bakım Gerekiyor">
+                            Bakım Gerekiyor
+                        </option>
+
+                        <option value="Arızalı">
+                            Arızalı
+                        </option>
+
+                        <option value="Kullanım Dışı">
+                            Kullanım Dışı
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="category-grid">
+
+                    <button type="button"
+                            class="category-card"
+                            onclick="selectCategory('all')">
+
+                        <div class="category-icon">
+                            ⚙️
+                        </div>
+
+                        <div class="category-info">
+
+                            <h3>
+                                Tüm Sistemler
+                            </h3>
+
+                            <span>
+                                @totalCount ekipman
+                            </span>
+
+                        </div>
+
+                    </button>
+
+
+                    @foreach (var category in categories)
+                    {
+                        var categoryCount =
+                        equipments.Count(e => e.Category == category);
+
+                        var categoryIcon = category switch
+                        {
+                            "Asansör Sistemleri" => "🛗",
+                            "Yangın Sistemleri" => "🔥",
+                            "Su ve Tesisat" => "💧",
+                            "Klima ve Havalandırma" => "❄️",
+                            "Elektrik ve Enerji" => "⚡",
+                            "Teknik Ekipmanlar" => "⚙️",
+                            "Acil Durum Sistemleri" => "🚨",
+                            _ => "🔧"
+                        };
+
+                        <button type="button"
+                                class="category-card"
+                                onclick="selectCategory('@category')">
+
+                            <div class="category-icon">
+                                @categoryIcon
+                            </div>
+
+                            <div class="category-info">
+
+                                <h3>
+                                    @category
+                                </h3>
+
+                                <span>
+                                    @categoryCount ekipman
+                                </span>
+
+                            </div>
+
+                        </button>
+                    }
+
+                </div>
+
+
+
+                <div class="equipment-grid"
+                     id="equipmentGrid">
+
+                    @foreach (var equipment in equipments)
+                    {
+                        var statusClass = equipment.Status switch
+                        {
+                            "Aktif" => "active",
+                            "Bakım Gerekiyor" => "maintenance",
+                            "Arızalı" => "faulty",
+                            "Kullanım Dışı" => "inactive",
+                            _ => "unknown"
+                        };
+
+                        var icon = equipment.Category switch
+                        {
+                            "Asansör Sistemleri" => "🛗",
+                            "Yangın Sistemleri" => "🔥",
+                            "Su ve Tesisat" => "💧",
+                            "Klima ve Havalandırma" => "❄️",
+                            "Elektrik ve Enerji" => "⚡",
+                            "Teknik Ekipmanlar" => "⚙️",
+                            "Acil Durum Sistemleri" => "🚨",
+                            _ => "🔧"
+                        };
+
+                        <div class="equipment-card"
+                             data-name="@equipment.Name.ToLower()"
+                             data-location="@equipment.Location.ToLower()"
+                             data-category="@equipment.Category"
+                             data-status="@equipment.Status">
+
+                            <div class="equipment-top">
+
+                                <div class="equipment-icon">
+                                    @icon
+                                </div>
+
+                                <span class="status-badge @statusClass">
+                                    @equipment.Status
+                                </span>
+
+                            </div>
+
+
+                            <div class="equipment-content">
+
+                                <span class="equipment-category">
+                                    @equipment.Category
+                                </span>
+
+                                <h3>
+                                    @equipment.Name
+                                </h3>
+
+                                <p class="equipment-location">
+                                    📍 @equipment.Location
+                                </p>
+
+                                @if (equipment.Floor.HasValue)
+                                {
+                                    <p class="equipment-floor">
+                                        🏢 Kat: @equipment.Floor
+                                    </p>
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(equipment.Description))
+                                {
+                                    <p class="equipment-description">
+                                        @equipment.Description
+                                    </p>
+                                }
+
+                            </div>
+
+
+                            <div class="inspection-info">
+
+                                <div>
+
+                                    <span>
+                                        Son Kontrol
+                                    </span>
+
+                                    <strong>
+                                        @(equipment.LastInspectionDate?.ToString("dd.MM.yyyy") ?? "-")
+                                    </strong>
+
+                                </div>
+
+                                <div>
+
+                                    <span>
+                                        Sonraki Kontrol
+                                    </span>
+
+                                    <strong>
+                                        @(equipment.NextInspectionDate?.ToString("dd.MM.yyyy") ?? "-")
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <div class="equipment-actions">
+
+
+                              
+
+                                <button type="button"
+                                        class="equipment-action detail-action"
+                                        onclick="showEquipment(
+                                                '@equipment.Id',
+                                                '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(equipment.Name))',
+                                                '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(equipment.Category))',
+                                                '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(equipment.Location))',
+                                                '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(equipment.Status))',
+                                                '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(equipment.Description ?? ""))'
+                                            )">
+
+                                    Detay
+
+                                </button>
+
+
+                             
+
+                                <form action="@Url.Action("Inspect", "TechnicalOperations")"
+                                      method="post"
+                                      class="action-form">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@equipment.Id" />
+
+                                    <button type="submit"
+                                            class="equipment-action control-action">
+
+                                        ✓ Kontrol Yap
+
+                                    </button>
+
+                                </form>
+
+
+                              
+
+                                <button type="button"
+                                        class="equipment-action maintenance-action"
+                                        onclick="openMaintenance(
+                                                '@equipment.Id',
+                                                '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(equipment.Name))'
+                                            )">
+
+                                    🔧 Bakıma Gönder
+
+                                </button>
+
+
+                      
+
+                                <button type="button"
+                                        class="equipment-action fault-action"
+                                        onclick="openFault(
+                                                '@equipment.Id',
+                                                '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(equipment.Name))'
+                                            )">
+
+                                    ⚠️ Arıza Bildir
+
+                                </button>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+
+                @if (!equipments.Any())
+                {
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            ⚙️
+                        </div>
+
+                        <h3>
+                            Teknik ekipman bulunamadı
+                        </h3>
+
+                        <p>
+                            Henüz sisteme kayıtlı teknik ekipman bulunmuyor.
+                        </p>
+
+                    </div>
+                }
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+
+    <div id="detailModal"
+         class="modal-overlay"
+         onclick="closeModalOutside(event)">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Teknik Ekipman Detayı
+                    </h2>
+
+                    <p id="detailCategory">
+                        -
+                    </p>
+
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeDetail()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="detail-modal-content">
+
+                <div class="detail-main">
+
+                    <span>
+                        Ekipman
+                    </span>
+
+                    <strong id="detailName">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="detail-row">
+
+                    <div>
+
+                        <span>
+                            Konum
+                        </span>
+
+                        <strong id="detailLocation">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Durum
+                        </span>
+
+                        <strong id="detailStatus">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-description">
+
+                    <span>
+                        Açıklama
+                    </span>
+
+                    <p id="detailDescription">
+                        -
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="cancel-btn"
+                        onclick="closeDetail()">
+
+                    Kapat
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="maintenanceModal"
+         class="modal-overlay"
+         onclick="closeMaintenanceOutside(event)">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        🔧 Bakıma Gönder
+                    </h2>
+
+                    <p>
+                        Teknik ekipman için bakım görevlisi seçin.
+                    </p>
+
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeMaintenance()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <form action="@Url.Action("SendToMaintenance", "TechnicalOperations")"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       id="maintenanceId"
+                       name="id" />
+
+
+                <div class="selected-equipment">
+
+                    <span>
+                        Ekipman
+                    </span>
+
+                    <strong id="maintenanceName">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="maintenanceEmployee">
+                        Bakım Görevlisi
+                    </label>
+
+
+                    <select id="maintenanceEmployee"
+                            name="employeeId"
+                            required>
+
+                        <option value="">
+                            Bakım görevlisi seçin
+                        </option>
+
+                        @foreach (var employee in maintenanceEmployees)
+                        {
+                            <option value="@employee.Id">
+                                @employee.FirstName @employee.LastName
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="maintenanceDescription">
+                        Bakım Açıklaması
+                    </label>
+
+                    <textarea id="maintenanceDescription"
+                              name="description"
+                              rows="4"
+                              placeholder="Örn. Periyodik bakım yapılacak..."></textarea>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            class="cancel-btn"
+                            onclick="closeMaintenance()">
+
+                        Vazgeç
+
+                    </button>
+
+
+                    <button type="submit"
+                            class="primary-btn"
+                            @(maintenanceEmployees.Any() ? "" : "disabled")>
+
+                        🔧 Bakıma Gönder
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="faultModal"
+         class="modal-overlay"
+         onclick="closeFaultOutside(event)">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        ⚠️ Arıza Bildir
+                    </h2>
+
+                    <p>
+                        Teknik ekipmanda oluşan arızayı kaydedin.
+                    </p>
+
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeFault()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <form action="@Url.Action("ReportFault", "TechnicalOperations")"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       id="faultId"
+                       name="id" />
+
+
+                <div class="selected-equipment">
+
+                    <span>
+                        Ekipman
+                    </span>
+
+                    <strong id="faultName">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="faultDescription">
+                        Arıza Açıklaması
+                    </label>
+
+                    <textarea id="faultDescription"
+                              name="description"
+                              rows="4"
+                              required
+                              placeholder="Arızayı açıklayın..."></textarea>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            class="cancel-btn"
+                            onclick="closeFault()">
+
+                        Vazgeç
+
+                    </button>
+
+
+                    <button type="submit"
+                            class="danger-btn">
+
+                        ⚠️ Arızayı Kaydet
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+
+        function filterEquipment() {
+
+            const search =
+                document.getElementById("equipmentSearch")
+                    .value
+                    .toLowerCase()
+                    .trim();
+
+            const category =
+                document.getElementById("categoryFilter").value;
+
+            const status =
+                document.getElementById("statusFilter").value;
+
+            const cards =
+                document.querySelectorAll(".equipment-card");
+
+            cards.forEach(card => {
+
+                const name =
+                    card.dataset.name || "";
+
+                const location =
+                    card.dataset.location || "";
+
+                const cardCategory =
+                    card.dataset.category || "";
+
+                const cardStatus =
+                    card.dataset.status || "";
+
+                const searchMatch =
+                    name.includes(search) ||
+                    location.includes(search);
+
+                const categoryMatch =
+                    category === "all" ||
+                    cardCategory === category;
+
+                const statusMatch =
+                    status === "all" ||
+                    cardStatus === status;
+
+                card.style.display =
+                    searchMatch &&
+                    categoryMatch &&
+                    statusMatch
+                        ? ""
+                        : "none";
+
+            });
+        }
+
+
+
+        function selectCategory(category) {
+
+            document.getElementById("categoryFilter").value = category;
+
+            document.getElementById("statusFilter").value = "all";
+
+            filterEquipment();
+
+            document.getElementById("equipmentGrid")
+                .scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+        }
+
+
+
+        function showStatus(status) {
+
+            document.getElementById("categoryFilter").value = "all";
+
+            document.getElementById("statusFilter").value = status;
+
+            filterEquipment();
+
+            document.getElementById("equipmentGrid")
+                .scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+        }
+
+
+
+        function showEquipment(
+            id,
+            name,
+            category,
+            location,
+            status,
+            description
+        ) {
+
+            document.getElementById("detailName")
+                .textContent = name;
+
+            document.getElementById("detailCategory")
+                .textContent = category;
+
+            document.getElementById("detailLocation")
+                .textContent = location;
+
+            document.getElementById("detailStatus")
+                .textContent = status;
+
+            document.getElementById("detailDescription")
+                .textContent =
+                    description || "Açıklama bulunmuyor.";
+
+            document.getElementById("detailModal")
+                .classList.add("show");
+        }
+
+
+        function closeDetail() {
+
+            document.getElementById("detailModal")
+                .classList.remove("show");
+        }
+
+
+
+        function openMaintenance(id, name) {
+
+            document.getElementById("maintenanceId")
+                .value = id;
+
+            document.getElementById("maintenanceName")
+                .textContent = name;
+
+          
+            const employeeSelect =
+                document.getElementById("maintenanceEmployee");
+
+            if (employeeSelect) {
+                employeeSelect.value = "";
+            }
+
+            document.getElementById("maintenanceDescription")
+                .value = "";
+
+            document.getElementById("maintenanceModal")
+                .classList.add("show");
+        }
+
+
+        function closeMaintenance() {
+
+            document.getElementById("maintenanceModal")
+                .classList.remove("show");
+        }
+
+
+        function closeMaintenanceOutside(event) {
+
+            if (event.target.id === "maintenanceModal") {
+                closeMaintenance();
+            }
+        }
+
+
+
+        function openFault(id, name) {
+
+            document.getElementById("faultId")
+                .value = id;
+
+            document.getElementById("faultName")
+                .textContent = name;
+
+            document.getElementById("faultDescription")
+                .value = "";
+
+            document.getElementById("faultModal")
+                .classList.add("show");
+        }
+
+
+        function closeFault() {
+
+            document.getElementById("faultModal")
+                .classList.remove("show");
+        }
+
+
+        function closeFaultOutside(event) {
+
+            if (event.target.id === "faultModal") {
+                closeFault();
+            }
+        }
+
+
+
+        function closeModalOutside(event) {
+
+            if (event.target.id === "detailModal") {
+                closeDetail();
+            }
+        }
+        
+
+
+        document.addEventListener("keydown", function (event) {
+
+            if (event.key !== "Escape") {
+                return;
+            }
+
+            closeDetail();
+            closeMaintenance();
+            closeFault();
+
+        });
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,872 @@
+﻿```cshtml
+@model List<HotelOS.Models.Employee>
+
+@{
+    ViewData["Title"] = "Personeller";
+
+    var employees = Model ?? new List<HotelOS.Models.Employee>();
+
+    var totalEmployees = ViewBag.TotalEmployees ?? 0;
+    var activeEmployees = ViewBag.ActiveEmployees ?? 0;
+    var passiveEmployees = ViewBag.PassiveEmployees ?? 0;
+
+    var positions =
+        ViewBag.Positions as List<string>
+        ?? new List<string>();
+
+    var selectedSearch = ViewBag.Search as string ?? "";
+    var selectedPosition = ViewBag.SelectedPosition as string ?? "all";
+    var selectedStatus = ViewBag.SelectedStatus as string ?? "all";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Personeller - HotelOS</title>
+
+    <link rel="stylesheet" href="~/css/employees.css" />
+
+</head>
+
+<body>
+
+    <div class="employees-app">
+
+
+        <header class="topbar">
+
+            <div class="page-heading">
+
+                <div class="breadcrumb">
+                    HotelOS / BOİ Müdürlüğü / Personeller
+                </div>
+
+                <h1>Personeller</h1>
+
+                <p>
+                    Otel personellerini, görevlerini ve çalışma durumlarını yönetin.
+                </p>
+
+            </div>
+
+            <div class="topbar-actions">
+
+                <a href="/BOI" class="dashboard-btn">
+                    ← Dashboard'a Dön
+                </a>
+
+                <div class="top-user">
+
+                    <div class="top-avatar">
+                        B
+                    </div>
+
+                    <div>
+                        <strong>BOİ Müdürü</strong>
+                        <small>Operasyon Müdürü</small>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <section class="stats-grid">
+
+          
+
+            <a href="@Url.Action("Index", "BOIEmployees")"
+               class="stat-card stat-button">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Toplam Personel
+                    </span>
+
+                    <div class="stat-icon blue">
+                        👥
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    @totalEmployees
+                </div>
+
+                <div class="stat-description">
+                    Sistemde kayıtlı tüm personel
+                </div>
+
+            </a>
+
+
+           
+
+            <a href="@Url.Action("Index", "BOIEmployees", new { status = "Aktif" })"
+               class="stat-card stat-button">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Aktif Personel
+                    </span>
+
+                    <div class="stat-icon green">
+                        ✓
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    @activeEmployees
+                </div>
+
+                <div class="stat-description">
+                    Aktif olarak çalışan personel
+                </div>
+
+            </a>
+
+
+      
+
+            <a href="@Url.Action("Index", "BOIEmployees", new { status = "Aktif" })"
+               class="stat-card stat-button">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Görevde
+                    </span>
+
+                    <div class="stat-icon orange">
+                        📋
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    @activeEmployees
+                </div>
+
+                <div class="stat-description">
+                    Aktif durumdaki personeller
+                </div>
+
+            </a>
+
+
+
+
+            <a href="@Url.Action("Index", "BOIEmployees", new { status = "Pasif" })"
+               class="stat-card stat-button">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Pasif Personel
+                    </span>
+
+                    <div class="stat-icon red">
+                        ⏸
+                    </div>
+
+                </div>
+
+                <div class="stat-number">
+                    @passiveEmployees
+                </div>
+
+                <div class="stat-description">
+                    Aktif olmayan personel
+                </div>
+
+            </a>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <h2>Personel Listesi</h2>
+
+                    <p>
+                        Personelleri isim, pozisyon ve durumlarına göre filtreleyin.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <form method="get"
+                  action="@Url.Action("Index", "BOIEmployees")"
+                  class="filters">
+
+             
+
+                <div class="search-box">
+
+                    <span>🔍</span>
+
+                    <input type="text"
+                           name="search"
+                           value="@selectedSearch"
+                           placeholder="İsim veya soyisim ara..." />
+
+                </div>
+
+
+               
+
+                <select name="position">
+
+                    <option value="all">
+                        Tüm Departmanlar / Pozisyonlar
+                    </option>
+
+                    @foreach (var item in positions)
+                    {
+                        if (selectedPosition == item)
+                        {
+                            <option value="@item" selected>
+                                @item
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@item">
+                                @item
+                            </option>
+                        }
+                    }
+
+                </select>
+
+
+
+                <select name="status">
+
+                    <option value="all"
+                            selected="@(selectedStatus == "all")">
+                        Tüm Durumlar
+                    </option>
+
+                    <option value="Aktif"
+                            selected="@(selectedStatus == "Aktif")">
+                        Aktif
+                    </option>
+
+                    <option value="Pasif"
+                            selected="@(selectedStatus == "Pasif")">
+                        Pasif
+                    </option>
+
+                </select>
+
+
+                <button type="submit"
+                        class="filter-btn">
+
+                    Filtrele
+
+                </button>
+
+
+                <a href="@Url.Action("Index", "BOIEmployees")"
+                   class="clear-btn">
+
+                    Temizle
+
+                </a>
+
+            </form>
+
+
+
+            <div class="table-wrapper">
+
+                <table class="employees-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>PERSONEL</th>
+                            <th>POZİSYON</th>
+                            <th>TELEFON</th>
+                            <th>E-POSTA</th>
+                            <th>İŞE GİRİŞ</th>
+                            <th>DURUM</th>
+                            <th>İŞLEMLER</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @if (employees.Any())
+                        {
+
+                            foreach (var employee in employees)
+                            {
+
+                                var statusClass =
+                                employee.Status == "Aktif"
+                                ? "active"
+                                : "passive";
+
+                                var fullName =
+                                $"{employee.FirstName} {employee.LastName}";
+
+                                <tr>
+
+                                  
+
+                                    <td>
+
+                                        <div class="employee-info">
+
+                                            <div class="employee-avatar">
+
+                                                @(string.IsNullOrWhiteSpace(employee.FirstName)
+                                                                                        ? "P"
+                                                                                        : employee.FirstName.Substring(0, 1).ToUpper())
+
+                                            </div>
+
+                                            <div>
+
+                                                <strong>
+                                                    @fullName
+                                                </strong>
+
+                                                <span>
+                                                    #@employee.Id
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                              
+
+                                    <td>
+
+                                        <span class="position-badge">
+
+                                            @(string.IsNullOrWhiteSpace(employee.Position)
+                                                                                ? "Belirtilmemiş"
+                                                                                : employee.Position)
+
+                                        </span>
+
+                                    </td>
+
+
+
+                                    <td>
+
+                                        @(string.IsNullOrWhiteSpace(employee.Phone)
+                                                                        ? "-"
+                                                                        : employee.Phone)
+
+                                    </td>
+
+
+                   
+
+                                    <td>
+
+                                        @(string.IsNullOrWhiteSpace(employee.Email)
+                                                                        ? "-"
+                                                                        : employee.Email)
+
+                                    </td>
+
+
+                                  
+
+                                    <td>
+
+                                        @employee.HireDate.ToString("dd.MM.yyyy")
+
+                                    </td>
+
+
+                           
+
+                                    <td>
+
+                                        <span class="status-badge @statusClass">
+
+                                            @(string.IsNullOrWhiteSpace(employee.Status)
+                                                                                ? "Bilinmiyor"
+                                                                                : employee.Status)
+
+                                </span>
+
+                                    </td>
+
+
+
+                                    <td>
+
+                                        <div class="action-buttons">
+
+                                  
+
+                                            <button type="button"
+                                                    class="table-btn detail-btn"
+                                                    onclick="showEmployee(
+                                                        '@employee.Id',
+                                                        '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(fullName))',
+                                                        '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.Position ?? "-"))',
+                                                        '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.Phone ?? "-"))',
+                                                        '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.Email ?? "-"))',
+                                                        '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.Status ?? "-"))'
+                                                    )">
+
+                                                Detay
+
+                                            </button>
+
+
+                                 
+
+                                            <button type="button"
+                                                    class="table-btn edit-btn"
+                                                    onclick="showEditEmployee(
+                    '@employee.Id',
+                    '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.FirstName))',
+                    '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.LastName))',
+                    '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.Phone ?? ""))',
+                    '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.Email ?? ""))',
+                    '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.Position ?? ""))',
+                    '@Html.Raw(System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(employee.Status ?? "Aktif"))'
+                )">
+
+                                                Düzenle
+
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                                                }
+
+                        }
+                        else
+                        {
+
+                            <tr>
+
+                                <td colspan="7">
+
+                                    <div class="empty-state">
+
+                                        <div class="empty-icon">
+                                            👥
+                                        </div>
+
+                                        <h3>
+                                            Personel bulunamadı
+                                        </h3>
+
+                                        <p>
+                                            Seçtiğiniz filtrelere uygun personel bulunmuyor.
+                                        </p>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </div>
+
+    
+
+    <div id="employeeModal"
+         class="modal-overlay"
+         onclick="closeEmployeeOutside(event)">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        Personel Detayı
+                    </h2>
+
+                    <p id="modalPosition">
+                        -
+                    </p>
+
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeEmployee()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="employee-detail">
+
+                <div class="detail-avatar"
+                     id="modalAvatar">
+
+                    P
+
+                </div>
+
+                <h2 id="modalName">
+                    -
+                </h2>
+
+                <span id="modalStatus"
+                      class="status-badge active">
+
+                    -
+
+                </span>
+
+
+                <div class="detail-grid">
+
+                    <div>
+
+                        <span>
+                            Telefon
+                        </span>
+
+                        <strong id="modalPhone">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            E-Posta
+                        </span>
+
+                        <strong id="modalEmail">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button type="button"
+                        class="cancel-btn"
+                        onclick="closeEmployee()">
+
+                    Kapat
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="editEmployeeModal"
+         class="modal-overlay"
+         onclick="closeEditEmployeeOutside(event)">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2>Personeli Düzenle</h2>
+
+                    <p>
+                        Personel bilgilerini güncelleyin.
+                    </p>
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeEditEmployee()">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form method="post"
+                  action="@Url.Action("Update", "BOIEmployees")">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       id="editEmployeeId"
+                       name="id" />
+
+
+                <div class="edit-form">
+
+                    <div class="form-group">
+
+                        <label>Ad</label>
+
+                        <input type="text"
+                               id="editFirstName"
+                               name="firstName"
+                               required />
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Soyad</label>
+
+                        <input type="text"
+                               id="editLastName"
+                               name="lastName"
+                               required />
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Telefon</label>
+
+                        <input type="text"
+                               id="editPhone"
+                               name="phone" />
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>E-Posta</label>
+
+                        <input type="email"
+                               id="editEmail"
+                               name="email" />
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Pozisyon</label>
+
+                        <input type="text"
+                               id="editPosition"
+                               name="position" />
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Durum</label>
+
+                        <select id="editStatus"
+                                name="status">
+
+                            <option value="Aktif">Aktif</option>
+                            <option value="Pasif">Pasif</option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            class="cancel-btn"
+                            onclick="closeEditEmployee()">
+
+                        İptal
+
+                    </button>
+
+                    <button type="submit"
+                            class="save-btn">
+
+                        Değişiklikleri Kaydet
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script>
+
+
+        function showEmployee(
+            id,
+            name,
+            position,
+            phone,
+            email,
+            status
+        ) {
+
+            document.getElementById("modalName")
+                .textContent = name;
+
+            document.getElementById("modalPosition")
+                .textContent = position;
+
+            document.getElementById("modalPhone")
+                .textContent = phone;
+
+            document.getElementById("modalEmail")
+                .textContent = email;
+
+            const statusElement =
+                document.getElementById("modalStatus");
+
+            statusElement.textContent = status;
+
+            statusElement.classList.remove("active", "passive");
+
+            if (status === "Aktif") {
+                statusElement.classList.add("active");
+            }
+            else {
+                statusElement.classList.add("passive");
+            }
+
+            document.getElementById("modalAvatar")
+                .textContent =
+                    name.charAt(0).toUpperCase();
+
+            document.getElementById("employeeModal")
+                .classList.add("show");
+        }
+
+
+        function closeEmployee() {
+
+            document.getElementById("employeeModal")
+                .classList.remove("show");
+        }
+
+
+
+        function closeEmployeeOutside(event) {
+
+            if (event.target.id === "employeeModal") {
+
+                closeEmployee();
+
+            }
+
+        }
+
+
+
+        document.addEventListener("keydown", function (event) {
+
+            if (event.key === "Escape") {
+
+                closeEmployee();
+
+            }
+
+        });
+
+                function showEditEmployee(
+            id,
+            firstName,
+            lastName,
+            phone,
+            email,
+            position,
+            status
+        ) {
+            document.getElementById("editEmployeeId").value = id;
+            document.getElementById("editFirstName").value = firstName;
+            document.getElementById("editLastName").value = lastName;
+            document.getElementById("editPhone").value = phone;
+            document.getElementById("editEmail").value = email;
+            document.getElementById("editPosition").value = position;
+            document.getElementById("editStatus").value = status;
+
+            document.getElementById("editEmployeeModal").classList.add("show");
+        }
+
+        function closeEditEmployee() {
+            document.getElementById("editEmployeeModal").classList.remove("show");
+        }
+
+        function closeEditEmployeeOutside(event) {
+            if (event.target.id === "editEmployeeModal") {
+                closeEditEmployee();
+            }
+        }
+
+
+    </script>
+
+</body>
+</html>
+```

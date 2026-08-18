@@ -1,0 +1,663 @@
+﻿@model List<HotelOS.Models.MaintenanceRequest>
+
+@{
+    ViewData["Title"] = "Bakım Yönetimi";
+
+    var total = Model?.Count ?? 0;
+    var urgent = Model?.Count(x => x.Priority == "Acil" || x.Priority == "Çok Acil") ?? 0;
+    var waiting = Model?.Count(x => x.Status == "Bekliyor") ?? 0;
+    var progress = Model?.Count(x => x.Status == "Devam Ediyor") ?? 0;
+}
+
+<div class="maintenance-page">
+
+    <div class="page-header">
+        <div>
+            <h1>🔧 Bakım Yönetimi</h1>
+            <p>Bakım gerektiren odaları buradan takip edebilirsiniz.</p>
+        </div>
+
+        <div class="total-box">
+            <span>Aktif Bakım</span>
+            <strong>@total</strong>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-icon purple">🔧</div>
+            <div>
+                <span>Toplam</span>
+                <strong>@total</strong>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon orange">⏳</div>
+            <div>
+                <span>Bekleyen</span>
+                <strong>@waiting</strong>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon blue">🔨</div>
+            <div>
+                <span>Devam Eden</span>
+                <strong>@progress</strong>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon red">🚨</div>
+            <div>
+                <span>Acil</span>
+                <strong>@urgent</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-header">
+        <div>
+            <h2>Bakım Gerektiren Odalar</h2>
+            <p>Sadece aktif bakım talebi bulunan odalar gösteriliyor.</p>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="maintenance-grid">
+            @foreach (var request in Model)
+            {
+                var roomNumber = request.Room?.RoomNumber ?? "-";
+
+                var employeeName = request.Employee != null
+                ? request.Employee.FirstName + " " + request.Employee.LastName
+                : "Personel atanmadı";
+
+                var priorityClass = request.Priority switch
+                {
+                    "Çok Acil" => "critical",
+                    "Acil" => "urgent",
+                    "Yüksek" => "high",
+                    "Normal" => "normal",
+                    "Düşük" => "low",
+                    _ => "unknown"
+                };
+
+                var statusClass = request.Status switch
+                {
+                    "Bekliyor" => "pending",
+                    "Devam Ediyor" => "progress",
+                    "Tamamlandı" => "completed",
+                    "İptal" => "cancelled",
+                    _ => "unknown"
+                };
+
+                var isMaxPriority = request.Priority == "Çok Acil";
+
+                <div class="maintenance-card @(request.Priority == "Çok Acil" ? "critical-card" : "")">
+
+                    <div class="card-top">
+                        <div class="room-number">
+                            🛏️ ODA @roomNumber
+                        </div>
+
+                        <span class="priority @priorityClass">
+                            @(request.Priority ?? "Belirtilmemiş")
+                        </span>
+                    </div>
+
+                    <div class="card-title">
+                        <div class="problem-icon">🔧</div>
+                        <div>
+                            <h3>
+                                @(string.IsNullOrWhiteSpace(request.Title) ? "Bakım Talebi" : request.Title)
+                            </h3>
+                            <span>Bakım / Arıza</span>
+                        </div>
+                    </div>
+
+                    <div class="description">
+                        <span>Açıklama</span>
+                        <p>
+                            @(string.IsNullOrWhiteSpace(request.Description) ? "Açıklama girilmemiş." : request.Description)
+                        </p>
+                    </div>
+
+                    <div class="card-info">
+                        <div>
+                            <span>Durum</span>
+                            <strong>
+                                <span class="status @statusClass">● @(request.Status ?? "Belirsiz")</span>
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span>Bildiren</span>
+                            <strong>@employeeName</strong>
+                        </div>
+
+                        <div>
+                            <span>Tarih</span>
+                            <strong>@request.CreatedAt.ToString("dd.MM.yyyy HH:mm")</strong>
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+
+                        <a href="@Url.Action("Details", "MaintenancePanel", new { id = request.Id })"
+                           class="action-btn detail-btn">
+                            👁️ <span>Detay</span>
+                        </a>
+
+                        <form asp-controller="MaintenancePanel" asp-action="Escalate" method="post"
+                              onsubmit="return confirm('Bu talebin önceliğini bir kademe artırmak istediğinize emin misiniz?');">
+                            <input type="hidden" name="id" value="@request.Id" />
+                            <button type="submit" class="action-btn escalate-btn" @(isMaxPriority ? "disabled" : "")>
+                                🔺 <span>@(isMaxPriority ? "Çok Acil" : "Aciliyet Artır")</span>
+                            </button>
+                        </form>
+
+                        <form asp-controller="MaintenancePanel" asp-action="Complete" method="post"
+                              onsubmit="return confirm('Bu bakım talebini tamamlandı olarak işaretlemek istediğinize emin misiniz?');">
+                            <input type="hidden" name="id" value="@request.Id" />
+                            <button type="submit" class="action-btn complete-btn">
+                                ✓ <span>Tamamla</span>
+                            </button>
+                        </form>
+
+                        <form asp-controller="MaintenancePanel" asp-action="Cancel" method="post"
+                              onsubmit="return confirm('Bu bakım talebini iptal etmek istediğinize emin misiniz?');">
+                            <input type="hidden" name="id" value="@request.Id" />
+                            <button type="submit" class="action-btn cancel-btn">
+                                ✕ <span>İptal</span>
+                            </button>
+                        </form>
+
+                    </div>
+
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-icon">✓</div>
+            <h2>Bakım Gerektiren Oda Yok</h2>
+            <p>Şu anda sistemde aktif bir bakım veya arıza talebi bulunmuyor.</p>
+        </div>
+    }
+
+</div>
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: #f5f7fb;
+        color: #1f2937;
+    }
+
+    .maintenance-page {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .page-header p {
+            margin: 8px 0 0;
+            color: #6b7280;
+        }
+
+    .total-box {
+        background: white;
+        padding: 14px 22px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,.06);
+        text-align: center;
+    }
+
+        .total-box span {
+            display: block;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .total-box strong {
+            display: block;
+            color: #4f46e5;
+            font-size: 24px;
+            margin-top: 3px;
+        }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,.05);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+        .stat-icon.purple {
+            background: #ede9fe;
+        }
+
+        .stat-icon.orange {
+            background: #ffedd5;
+        }
+
+        .stat-icon.blue {
+            background: #dbeafe;
+        }
+
+        .stat-icon.red {
+            background: #fee2e2;
+        }
+
+    .stat-card span {
+        display: block;
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    .stat-card strong {
+        display: block;
+        font-size: 24px;
+        margin-top: 4px;
+    }
+
+    .section-header {
+        margin-bottom: 18px;
+    }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .section-header p {
+            margin: 6px 0 0;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+
+    .maintenance-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+
+    .maintenance-card {
+        background: white;
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 4px 18px rgba(0,0,0,.06);
+        border: 1px solid #eef0f5;
+        transition: .2s;
+    }
+
+        .maintenance-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 28px rgba(0,0,0,.1);
+        }
+
+    .critical-card {
+        border: 1px solid #fecaca;
+        box-shadow: 0 4px 18px rgba(220,38,38,.12);
+    }
+
+    .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .room-number {
+        font-weight: 800;
+        font-size: 17px;
+        color: #3730a3;
+        background: #eef2ff;
+        padding: 9px 12px;
+        border-radius: 10px;
+    }
+
+    .priority {
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .priority.urgent {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .priority.high {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .priority.normal {
+            background: #fef3c7;
+            color: #a16207;
+        }
+
+        .priority.low {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .priority.unknown {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .priority.critical {
+            background: #7f1d1d;
+            color: #fff;
+            animation: pulse-critical 1.6s infinite;
+        }
+
+    @@keyframes pulse-critical {
+        0% {
+            box-shadow: 0 0 0 0 rgba(127,29,29,.5);
+        }
+
+        70% {
+            box-shadow: 0 0 0 6px rgba(127,29,29,0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(127,29,29,0);
+        }
+    }
+
+    .card-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
+    .problem-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: #f3e8ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .card-title h3 {
+        margin: 0;
+        font-size: 16px;
+    }
+
+    .card-title span {
+        display: block;
+        color: #9ca3af;
+        font-size: 11px;
+        margin-top: 4px;
+    }
+
+    .description {
+        background: #f8fafc;
+        border-radius: 11px;
+        padding: 13px;
+        margin-bottom: 18px;
+        min-height: 90px;
+    }
+
+        .description span {
+            color: #9ca3af;
+            font-size: 11px;
+        }
+
+        .description p {
+            margin: 7px 0 0;
+            color: #4b5563;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+    .card-info {
+        border-top: 1px solid #f1f1f1;
+        padding-top: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .card-info > div {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-info span {
+            color: #9ca3af;
+            font-size: 11px;
+        }
+
+        .card-info strong {
+            font-size: 12px;
+            text-align: right;
+        }
+
+    .status {
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 10px !important;
+        font-weight: 700;
+    }
+
+        .status.pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status.progress {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status.completed {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status.cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status.unknown {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+    .card-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 18px;
+        padding-top: 15px;
+        border-top: 1px solid #f1f1f1;
+    }
+
+        .card-actions form {
+            margin: 0;
+        }
+
+    .action-btn {
+        width: 100%;
+        height: 42px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        text-decoration: none;
+        border: none;
+        transition: .15s ease;
+    }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .action-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .detail-btn {
+        background: #eef2ff;
+        color: #4338ca;
+    }
+
+        .detail-btn:hover {
+            background: #e0e7ff;
+        }
+
+    .escalate-btn {
+        background: #fff1f2;
+        color: #be123c;
+    }
+
+        .escalate-btn:hover:not(:disabled) {
+            background: #ffe4e6;
+        }
+
+    .complete-btn {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+        .complete-btn:hover {
+            background: #bbf7d0;
+        }
+
+    .cancel-btn {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+        .cancel-btn:hover {
+            background: #e5e7eb;
+        }
+
+    .empty-state {
+        background: white;
+        border-radius: 18px;
+        padding: 80px 20px;
+        text-align: center;
+        box-shadow: 0 4px 18px rgba(0,0,0,.05);
+    }
+
+    .empty-icon {
+        width: 75px;
+        height: 75px;
+        margin: 0 auto 18px;
+        border-radius: 50%;
+        background: #dcfce7;
+        color: #16a34a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 35px;
+    }
+
+    .empty-state h2 {
+        margin: 0;
+        font-size: 20px;
+    }
+
+    .empty-state p {
+        color: #9ca3af;
+        margin-top: 8px;
+    }
+
+    @@media (max-width: 1200px) {
+        .maintenance-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 700px) {
+        .maintenance-page {
+            padding: 20px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .maintenance-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .card-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

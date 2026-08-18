@@ -1,0 +1,644 @@
+﻿@model List<HotelOS.Models.Vehicle>
+
+@{
+    ViewData["Title"] = "Vale & Otopark";
+
+    var parkingCount = Model.Count(x => x.ComputeCurrentStatus() == "Otoparkta");
+    var waitingCount = Model.Count(x => x.ComputeCurrentStatus() == "Teslim Bekliyor");
+
+    var today = DateTime.UtcNow.Date;
+
+    var todayDeliveredCount = Model.Count(x =>
+        x.DeliveryDate.HasValue &&
+        x.DeliveryDate.Value.Date == today
+    );
+
+    var todayTotalCount = Model.Count(x =>
+        x.CreatedAt.Date == today
+    );
+}
+
+<link rel="stylesheet" href="~/css/vale.css" />
+
+<div class="vale-page">
+
+    <div class="vale-header">
+        <div>
+            <div class="page-kicker">
+                OPERASYON / VALE
+            </div>
+
+            <h1>Vale & Otopark</h1>
+
+            <p>
+                Vale tarafından sisteme girilen araçları ve otopark durumlarını takip edin.
+            </p>
+        </div>
+
+        <div class="header-badge">
+            <span class="header-badge-dot"></span>
+            Canlı Araç Takibi
+        </div>
+    </div>
+
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-green">
+                🚘
+            </div>
+
+            <div class="stat-content">
+                <span>Otoparktaki Araçlar</span>
+                <strong>@parkingCount</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-orange">
+                🔑
+            </div>
+
+            <div class="stat-content">
+                <span>Teslim Bekleyen</span>
+                <strong>@waitingCount</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-blue">
+                ✓
+            </div>
+
+            <div class="stat-content">
+                <span>Bugün Teslim Edilen</span>
+                <strong>@todayDeliveredCount</strong>
+            </div>
+        </div>
+
+
+        <div class="stat-card">
+            <div class="stat-icon stat-icon-dark">
+                📊
+            </div>
+
+            <div class="stat-content">
+                <span>Bugünkü Toplam Araç</span>
+                <strong>@todayTotalCount</strong>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="vehicle-section">
+
+        <div class="section-header">
+
+            <div class="section-title">
+
+                <div class="section-title-icon">
+                    🚗
+                </div>
+
+                <div>
+                    <h2>Araç Takibi</h2>
+
+                    <p>
+                        Vale tarafından sisteme girilen araçlar
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="vehicle-count">
+
+                <strong>@Model.Count</strong>
+
+                <span>Toplam Araç</span>
+
+            </div>
+
+        </div>
+
+
+        <div class="filters">
+
+            <div class="search-box">
+
+                <span class="search-icon">
+                    🔎
+                </span>
+
+                <input type="text"
+                       id="vehicleSearch"
+                       placeholder="Plaka, misafir, marka veya model ara..." />
+
+            </div>
+
+
+            <select id="statusFilter">
+
+                <option value="all">
+                    Tüm Durumlar
+                </option>
+
+                <option value="parking">
+                    Otoparkta
+                </option>
+
+                <option value="waiting">
+                    Teslim Bekliyor
+                </option>
+
+                <option value="delivered">
+                    Teslim Edildi
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="vehicle-list">
+
+            @if (Model != null && Model.Any())
+            {
+                foreach (var vehicle in Model)
+                {
+                    var currentStatus = vehicle.ComputeCurrentStatus();
+
+                    var statusClass = currentStatus switch
+                    {
+                        "Otoparkta" => "parking",
+                        "Teslim Bekliyor" => "waiting",
+                        "Teslim Edildi" => "delivered",
+                        _ => "default"
+                    };
+
+                    var searchData =
+                    $"{vehicle.PlateNumber} {vehicle.CustomerName} {vehicle.Brand} {vehicle.Model}";
+
+                    <div class="vehicle-card"
+                         data-status="@statusClass"
+                         data-search="@searchData">
+
+                        <div class="vehicle-top">
+
+                            <div class="vehicle-info">
+
+                                <div class="car-icon">
+                                    🚘
+                                </div>
+
+                                <div class="vehicle-title">
+
+                                    <h3>
+                                        @vehicle.PlateNumber
+                                    </h3>
+
+                                    <p>
+                                        @if (!string.IsNullOrWhiteSpace(vehicle.Brand) ||
+                                                                        !string.IsNullOrWhiteSpace(vehicle.Model))
+                                        {
+                                            @($"{vehicle.Brand} {vehicle.Model}")
+                                        }
+                                        else
+                                        {
+                                            @("Araç bilgisi girilmemiş")
+                                        }
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <span class="status status-@statusClass">
+
+                        <span class="status-dot"></span>
+
+                        @currentStatus
+
+                    </span>
+
+                </div>
+
+
+                <div class="vehicle-details">
+
+                    <div class="detail-item">
+
+                        <span>Misafir</span>
+
+                        <strong>
+                            @vehicle.CustomerName
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Telefon</span>
+
+                        <strong>
+                            @(string.IsNullOrWhiteSpace(vehicle.CustomerPhone)
+                                                        ? "Belirtilmemiş"
+                                                        : vehicle.CustomerPhone)
+                                                                            </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Otopark Katı</span>
+
+                        <strong>
+                            @vehicle.ParkingFloor. Kat
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Otopark Konumu</span>
+
+                        <strong>
+                            @(string.IsNullOrWhiteSpace(vehicle.ParkingLocation)
+                                                        ? "Belirtilmemiş"
+                                                        : vehicle.ParkingLocation)
+                        </strong>
+
+                            </div>
+
+
+                            <div class="detail-item">
+
+                                <span>Giriş</span>
+
+                                <strong>
+                                    @vehicle.ArrivalDate
+                                    .ToLocalTime()
+                                    .ToString("dd.MM.yyyy HH:mm")
+                                </strong>
+
+                            </div>
+
+
+                            <div class="detail-item">
+
+                                <span>Vale</span>
+
+                                <strong>
+
+                            @if (vehicle.CreatedByUser != null)
+                                    {
+                                        @($"{vehicle.CreatedByUser.FirstName} {vehicle.CreatedByUser.LastName}")
+                                    }
+                                    else
+                                    {
+                                        @("Bilinmiyor")
+                                    }
+
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        @if (vehicle.CleaningRequested)
+                        {
+                            <div class="cleaning-warning">
+                                <span>🧹</span>
+                                Temizlik talebi oluşturuldu
+                            </div>
+                        }
+
+
+                        <button type="button"
+                                class="detail-btn"
+                                onclick="showVehicleDetails(@vehicle.Id)">
+
+                            <span>Aracın Detaylarını Gör</span>
+
+                            <span class="detail-arrow">
+                                →
+                            </span>
+
+                        </button>
+
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        🚗
+                    </div>
+
+                    <h3>
+                        Henüz araç bulunmuyor
+                    </h3>
+
+                    <p>
+                        Vale tarafından sisteme henüz araç girişi yapılmamış.
+                    </p>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div id="vehicleDetailsModal"
+     class="vehicle-modal-overlay"
+     aria-hidden="true">
+
+    <div class="vehicle-modal"
+         role="dialog"
+         aria-modal="true">
+
+        <div class="modal-header">
+
+            <div>
+
+                <div class="modal-kicker">
+                    ARAÇ KAYDI
+                </div>
+
+                <h2>🚗 Araç Detayı</h2>
+
+                <p>
+                    Sistemde kayıtlı araç bilgileri
+                </p>
+
+            </div>
+
+            <button type="button"
+                    class="modal-close"
+                    onclick="closeVehicleDetails()">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <div id="vehicleDetailsContent"
+             class="modal-body">
+
+            <div class="modal-loading">
+
+                <div class="loading-spinner"></div>
+
+                <span>
+                    Araç bilgileri yükleniyor...
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const searchInput =
+        document.getElementById("vehicleSearch");
+
+    const statusFilter =
+        document.getElementById("statusFilter");
+
+    const vehicleCards =
+        document.querySelectorAll(".vehicle-card");
+
+
+    function filterVehicles() {
+
+        const searchText =
+            (searchInput?.value || "")
+                .toLowerCase()
+                .trim();
+
+        const selectedStatus =
+            statusFilter?.value || "all";
+
+
+        vehicleCards.forEach(card => {
+
+            const searchData =
+                (card.getAttribute("data-search") || "")
+                    .toLowerCase();
+
+            const cardStatus =
+                card.getAttribute("data-status");
+
+
+            const matchesSearch =
+                searchData.includes(searchText);
+
+
+            const matchesStatus =
+                selectedStatus === "all" ||
+                cardStatus === selectedStatus;
+
+
+            card.style.display =
+                matchesSearch && matchesStatus
+                    ? ""
+                    : "none";
+
+        });
+
+    }
+
+
+    searchInput?.addEventListener(
+        "input",
+        filterVehicles
+    );
+
+
+    statusFilter?.addEventListener(
+        "change",
+        filterVehicles
+    );
+
+
+    async function showVehicleDetails(id) {
+
+        const modal =
+            document.getElementById("vehicleDetailsModal");
+
+        const content =
+            document.getElementById("vehicleDetailsContent");
+
+
+        if (!modal || !content) {
+            return;
+        }
+
+
+        modal.classList.add("active");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        document.body.classList.add("modal-open");
+
+
+        content.innerHTML = `
+            <div class="modal-loading">
+                <div class="loading-spinner"></div>
+                <span>Araç bilgileri yükleniyor...</span>
+            </div>
+        `;
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/ValePanel/Details?id=${id}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest"
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Araç bilgileri alınamadı."
+                );
+
+            }
+
+
+            const html =
+                await response.text();
+
+
+            content.innerHTML = html;
+
+        }
+        catch (error) {
+
+            content.innerHTML = `
+                <div class="modal-error">
+
+                    <div class="error-icon">
+                        ⚠️
+                    </div>
+
+                    <h3>
+                        Araç bilgileri alınamadı
+                    </h3>
+
+                    <p>
+                        Araç detayları yüklenirken bir hata oluştu.
+                    </p>
+
+                    <button
+                        type="button"
+                        class="error-close-btn"
+                        onclick="closeVehicleDetails()">
+
+                        Kapat
+
+                    </button>
+
+                </div>
+            `;
+
+            console.error(error);
+
+        }
+
+    }
+
+
+    function closeVehicleDetails() {
+
+        const modal =
+            document.getElementById(
+                "vehicleDetailsModal"
+            );
+
+
+        if (!modal) {
+            return;
+        }
+
+
+        modal.classList.remove("active");
+
+        modal.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        document.body.classList.remove(
+            "modal-open"
+        );
+
+    }
+
+
+    document
+        .getElementById("vehicleDetailsModal")
+        ?.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    event.target === this
+                ) {
+
+                    closeVehicleDetails();
+
+                }
+
+            }
+        );
+
+
+    document.addEventListener(
+        "keydown",
+        function (event) {
+
+            if (
+                event.key === "Escape"
+            ) {
+
+                closeVehicleDetails();
+
+            }
+
+        }
+    );
+
+</script>

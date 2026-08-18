@@ -1,0 +1,245 @@
+﻿@model HotelOS.Models.Room
+
+@{
+    ViewData["Title"] = "Kullanım Dışı Yap";
+}
+
+<style>
+    body {
+        background: #f6f7fb;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    .out-page {
+        max-width: 720px;
+        margin: 45px auto;
+        padding: 0 20px;
+    }
+
+    .out-card {
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 8px 30px rgba(0,0,0,.06);
+    }
+
+    .out-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 28px;
+    }
+
+    .out-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fee2e2;
+        font-size: 25px;
+    }
+
+    .out-header h1 {
+        margin: 0;
+        font-size: 27px;
+    }
+
+    .out-header p {
+        margin: 5px 0 0;
+        color: #6b7280;
+    }
+
+    .room-info {
+        background: #f8f7ff;
+        border: 1px solid #e9e5ff;
+        border-radius: 14px;
+        padding: 17px;
+        margin-bottom: 25px;
+    }
+
+    .room-info strong {
+        color: #5b4be7;
+        font-size: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 11px;
+        font-size: 14px;
+        outline: none;
+        transition: .2s;
+    }
+
+    .form-control:focus {
+        border-color: #6d5dfc;
+        box-shadow: 0 0 0 3px rgba(109,93,252,.10);
+    }
+
+    textarea.form-control {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .error {
+        background: #fee2e2;
+        color: #b91c1c;
+        padding: 12px 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+    }
+
+    .btn {
+        flex: 1;
+        min-height: 45px;
+        border-radius: 11px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: .2s;
+    }
+
+    .cancel-btn {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .cancel-btn:hover {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .submit-btn {
+        background: #ef4444;
+        color: white;
+    }
+
+    .submit-btn:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+    }
+</style>
+
+<div class="out-page">
+
+    ```
+    <div class="out-card">
+
+        <div class="out-header">
+
+            <div class="out-icon">
+                🚫
+            </div>
+
+            <div>
+                <h1>Kullanım Dışı Yap</h1>
+                <p>Odanın kullanım dışı bırakılma bilgilerini girin.</p>
+            </div>
+
+        </div>
+
+        <div class="room-info">
+            <strong>Oda @Model.RoomNumber</strong>
+
+            <div>
+                @(Model.RoomType?.TypeName ?? "Oda tipi belirtilmemiş")
+                · @Model.Floor. Kat
+            </div>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="error">
+                ⚠️ @ViewBag.Error
+            </div>
+        }
+
+        <form method="post" action="/RoomOutOfService">
+
+            <input type="hidden"
+                   name="roomId"
+                   value="@Model.Id" />
+
+            <div class="form-group">
+
+                <label>Sebep *</label>
+
+                <select name="reason"
+                        class="form-control"
+                        required>
+
+                    <option value="">Sebep seçin</option>
+                    <option value="Teknik Arıza">🔧 Teknik Arıza</option>
+                    <option value="Bakım">🛠️ Bakım</option>
+                    <option value="Büyük Temizlik">🧹 Büyük Temizlik</option>
+                    <option value="Yenileme">🏗️ Yenileme</option>
+                    <option value="Diğer">📌 Diğer</option>
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Açıklama</label>
+
+                <textarea name="description"
+                          class="form-control"
+                          placeholder="Odanın neden kullanım dışı olduğunu açıklayın..."></textarea>
+
+            </div>
+
+            <div class="form-group">
+
+                <label>Tahmini Tekrar Kullanım Tarihi</label>
+
+                <input type="date"
+                       name="expectedEndDate"
+                       class="form-control" />
+
+            </div>
+
+            <div class="actions">
+
+                <a href="/RoomsView"
+                   class="btn cancel-btn">
+                    ← Vazgeç
+                </a>
+
+                <button type="submit"
+                        class="btn submit-btn">
+                    🚫 Kullanım Dışı Yap
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+    ```
+
+</div>

@@ -1,0 +1,553 @@
+﻿@model HotelOS.Models.Payment
+
+@{
+    ViewData["Title"] = "Ödeme Detayı";
+
+    var customer = Model.Reservation?.Customer;
+
+    var customerName = customer != null
+        ? customer.FirstName + " " + customer.LastName
+        : "Bilinmiyor";
+
+    var roomNumber = Model.Reservation?.Room?.RoomNumber ?? "-";
+}
+
+<div class="payment-details-page">
+
+ 
+
+    <div class="page-header">
+
+        <div>
+
+            <a asp-controller="PaymentPanel"
+               asp-action="Index"
+               class="back-btn">
+
+                ← Ödemelere Dön
+
+            </a>
+
+            <h1>💳 Ödeme Detayı</h1>
+
+            <p>
+                Ödeme işlemine ait tüm bilgileri görüntüleyin.
+            </p>
+
+        </div>
+
+    </div>
+
+
+
+
+    <div class="details-card">
+
+
+      
+
+        <div class="payment-header">
+
+            <div class="payment-icon">
+                💳
+            </div>
+
+            <div>
+
+                <span class="label">
+                    Ödeme İşlemi
+                </span>
+
+                <h2>
+                    ₺@Model.Amount.ToString("N2")
+                </h2>
+
+                <span class="payment-id">
+                    Ödeme #@Model.Id
+                </span>
+
+            </div>
+
+
+
+            <div class="header-status">
+
+                @if (Model.Status == "Ödendi")
+                {
+                    <span class="status paid">
+                        ● Ödendi
+                    </span>
+                }
+                else if (Model.Status == "Bekliyor")
+                {
+                    <span class="status pending">
+                        ● Bekliyor
+                    </span>
+                }
+                else if (Model.Status == "İptal")
+                {
+                    <span class="status cancelled">
+                        ● İptal
+                    </span>
+                }
+                else
+                {
+                    <span class="status unknown">
+                        ● @(Model.Status ?? "Belirsiz")
+                    </span>
+                }
+
+            </div>
+
+        </div>
+
+
+
+        <div class="info-grid">
+
+
+         
+
+            <div class="info-item">
+
+                <span class="info-label">
+                    👤 Müşteri
+                </span>
+
+                <strong>
+                    @customerName
+                </strong>
+
+                @if (customer != null)
+                {
+                    <small>
+                        Müşteri #@customer.Id
+                    </small>
+                }
+
+            </div>
+
+
+     
+
+            <div class="info-item">
+
+                <span class="info-label">
+                    🛏️ Oda
+                </span>
+
+                <strong>
+                    @roomNumber
+                </strong>
+
+                @if (Model.Reservation?.Room != null)
+                {
+                    <small>
+                        Oda bilgisi
+                    </small>
+                }
+
+            </div>
+
+
+         
+            <div class="info-item">
+
+                <span class="info-label">
+                    📅 Rezervasyon
+                </span>
+
+                @if (Model.Reservation != null)
+                {
+                    <strong>
+                        #@Model.Reservation.Id
+                    </strong>
+
+                    <small>
+                        @Model.Reservation.CheckIn.ToString("dd.MM.yyyy")
+                        -
+                        @Model.Reservation.CheckOut.ToString("dd.MM.yyyy")
+                    </small>
+                }
+                else
+                {
+                    <strong>
+                        -
+                    </strong>
+                }
+
+            </div>
+
+
+
+            <div class="info-item">
+
+                <span class="info-label">
+                    💳 Ödeme Yöntemi
+                </span>
+
+                <strong>
+                    @(Model.PaymentMethod ?? "-")
+                </strong>
+
+            </div>
+
+
+            
+
+            <div class="info-item">
+
+                <span class="info-label">
+                    🕒 Ödeme Tarihi
+                </span>
+
+                <strong>
+                    @Model.PaymentDate.ToString("dd.MM.yyyy")
+                </strong>
+
+                <small>
+                    @Model.PaymentDate.ToString("HH:mm")
+                </small>
+
+            </div>
+
+
+        
+
+            <div class="info-item">
+
+                <span class="info-label">
+                    🔢 İşlem Numarası
+                </span>
+
+                <strong class="transaction">
+                    @(Model.TransactionNo ?? "-")
+                </strong>
+
+            </div>
+
+
+        
+            <div class="info-item">
+
+                <span class="info-label">
+                    🆔 Ödeme ID
+                </span>
+
+                <strong>
+                    #@Model.Id
+                </strong>
+
+            </div>
+
+
+          
+
+            <div class="info-item">
+
+                <span class="info-label">
+                    🧾 Rezervasyon ID
+                </span>
+
+                <strong>
+                    #@Model.ReservationId
+                </strong>
+
+            </div>
+
+        </div>
+
+
+      
+
+        <div class="bottom-section">
+
+            <div>
+
+                <span class="bottom-label">
+                    Ödenen Tutar
+                </span>
+
+                <strong class="total">
+                    ₺@Model.Amount.ToString("N2")
+                </strong>
+
+            </div>
+
+
+            <a asp-controller="PaymentPanel"
+               asp-action="Index"
+               class="back-main-btn">
+
+                ← Ödeme Listesine Dön
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+
+    .payment-details-page {
+        padding: 30px;
+        min-height: 100vh;
+        color: #1f2937;
+    }
+
+
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+
+    .back-btn {
+        display: inline-block;
+        color: #4f46e5;
+        text-decoration: none;
+        font-size: 13px;
+        margin-bottom: 15px;
+    }
+
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 30px;
+    }
+
+
+    .page-header p {
+        color: #6b7280;
+        margin-top: 7px;
+    }
+
+
+
+    .details-card {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+        overflow: hidden;
+        max-width: 1100px;
+    }
+
+
+
+    .payment-header {
+        padding: 30px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        border-bottom: 1px solid #eee;
+    }
+
+
+    .payment-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        background: #eef2ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+
+
+    .label {
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+
+    .payment-header h2 {
+        margin: 4px 0;
+        font-size: 30px;
+    }
+
+
+    .payment-id {
+        color: #9ca3af;
+        font-size: 12px;
+    }
+
+
+    .header-status {
+        margin-left: auto;
+    }
+
+
+
+    .status {
+        padding: 8px 13px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+
+        .status.paid {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+
+        .status.pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+
+        .status.cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+
+        .status.unknown {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+
+  
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+
+    .info-item {
+        padding: 22px 30px;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+
+        .info-item:nth-child(odd) {
+            border-right: 1px solid #f1f1f1;
+        }
+
+
+    .info-label {
+        display: block;
+        color: #6b7280;
+        font-size: 12px;
+        margin-bottom: 7px;
+    }
+
+
+    .info-item strong {
+        display: block;
+        font-size: 15px;
+    }
+
+
+    .info-item small {
+        display: block;
+        color: #9ca3af;
+        margin-top: 5px;
+        font-size: 11px;
+    }
+
+
+    .transaction {
+        font-family: monospace;
+        background: #f3f4f6;
+        padding: 6px 8px;
+        border-radius: 6px;
+        display: inline-block !important;
+        font-size: 12px !important;
+    }
+
+
+
+
+    .bottom-section {
+        padding: 25px 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fafafa;
+    }
+
+
+    .bottom-label {
+        display: block;
+        color: #6b7280;
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+
+    .total {
+        font-size: 25px;
+    }
+
+
+    .back-main-btn {
+        background: #4f46e5;
+        color: white;
+        text-decoration: none;
+        padding: 11px 17px;
+        border-radius: 9px;
+        font-size: 13px;
+    }
+
+
+        .back-main-btn:hover {
+            background: #4338ca;
+        }
+
+
+ 
+
+    @@media (max-width: 700px) {
+
+        .payment-details-page {
+            padding: 20px;
+        }
+
+
+        .payment-header {
+            align-items: flex-start;
+        }
+
+
+        .header-status {
+            margin-left: 0;
+        }
+
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+
+        .info-item:nth-child(odd) {
+            border-right: none;
+        }
+
+
+        .bottom-section {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 18px;
+        }
+    }
+
+</style>

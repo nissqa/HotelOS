@@ -1,0 +1,1708 @@
+﻿@model List<HotelOS.Models.CleaningTask>
+
+@{
+    ViewData["Title"] = "Temizlik Paneli";
+
+    var today = DateTime.Today;
+    var fiveDaysAgo = today.AddDays(-5);
+
+    var allTasks = Model ?? new List<HotelOS.Models.CleaningTask>();
+
+    var waitingTasks = allTasks
+        .Where(x => x.Status == "Bekliyor" && x.TaskDate.Date <= today)
+        .OrderBy(x => x.TaskDate)
+        .ToList();
+
+    var cleaningTasks = allTasks
+        .Where(x => x.Status == "Temizlikte")
+        .OrderBy(x => x.TaskDate)
+        .ToList();
+
+    var completedTasks = allTasks
+        .Where(x =>
+            x.Status == "Temizlendi" &&
+            x.TaskDate.Date >= fiveDaysAgo &&
+            x.TaskDate.Date <= today)
+        .OrderByDescending(x => x.TaskDate)
+        .ToList();
+
+    var maintenanceTasks = allTasks
+        .Where(x => x.Status == "Bakım")
+        .OrderByDescending(x => x.TaskDate)
+        .ToList();
+
+    var completedTodayCount = allTasks.Count(x =>
+        x.Status == "Temizlendi" &&
+        x.TaskDate.Date == today);
+}
+
+<div class="cleaning-page">
+
+
+    <div class="page-header">
+        <div>
+            <div class="welcome-badge">
+                🧹 TEMİZLİK PERSONELİ
+            </div>
+
+            <h1>Temizlik Paneli</h1>
+
+            <p>
+                Bugün temizlenmesi gereken odaları ve devam eden görevleri buradan yönetebilirsiniz.
+            </p>
+        </div>
+
+        <div class="today-box">
+            <span>Bugün</span>
+            <strong>@DateTime.Now.ToString("dd.MM.yyyy")</strong>
+        </div>
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat-card waiting-stat"
+             onclick="goToSection('waiting-section')"
+             role="button"
+             tabindex="0">
+
+            <div class="stat-icon">🧹</div>
+
+            <div>
+                <span>Temizlenecek</span>
+                <strong>@waitingTasks.Count</strong>
+                <small>Bekleyen oda</small>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card cleaning-stat"
+             onclick="goToSection('cleaning-section')"
+             role="button"
+             tabindex="0">
+
+            <div class="stat-icon">🟡</div>
+
+            <div>
+                <span>Devam Eden</span>
+                <strong>@cleaningTasks.Count</strong>
+                <small>Temizlik yapılıyor</small>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card completed-stat"
+             onclick="goToSection('history-section')"
+             role="button"
+             tabindex="0">
+
+            <div class="stat-icon">✓</div>
+
+            <div>
+                <span>Bugün Temizlenen</span>
+                <strong>@completedTodayCount</strong>
+                <small>Tamamlanan oda</small>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card maintenance-stat"
+             onclick="goToSection('maintenance-section')"
+             role="button"
+             tabindex="0">
+
+            <div class="stat-icon">🔧</div>
+
+            <div>
+                <span>Bakım Bekleyen</span>
+                <strong>@maintenanceTasks.Count</strong>
+                <small>Bakım bildirimi</small>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <section class="section" id="waiting-section">
+
+        <div class="section-header">
+
+            <div>
+                <h2>🧹 Temizlenmesi Gereken Odalar</h2>
+
+                <p>
+                    Öncelikli olarak tamamlanması gereken temizlik görevleri
+                </p>
+            </div>
+
+            <span class="count-badge">
+                @waitingTasks.Count oda
+            </span>
+
+        </div>
+
+
+        @if (waitingTasks.Any())
+        {
+            <div class="room-grid">
+
+                @foreach (var task in waitingTasks)
+                {
+                    var roomNumber = task.Room?.RoomNumber ?? "-";
+
+                    <div class="room-card waiting-card">
+
+                        <div class="room-top">
+
+                            <div class="room-icon">
+                                🛏️
+                            </div>
+
+                            <span class="status-badge waiting">
+                                🧹 Temizlenecek
+                            </span>
+
+                        </div>
+
+
+                        <div class="room-number">
+                            Oda @roomNumber
+                        </div>
+
+
+                        <div class="floor-info">
+                            📍 Oda görevi
+                        </div>
+
+
+                        <div class="task-info">
+
+                            <div>
+
+                                <span>
+                                    Görev tarihi
+                                </span>
+
+                                <strong>
+                                    @task.TaskDate.ToString("dd.MM.yyyy HH:mm")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        @if (!string.IsNullOrWhiteSpace(task.Notes))
+                        {
+                            <div class="notes">
+                                💬 @task.Notes
+                            </div>
+                        }
+
+
+                        <div class="card-actions">
+
+                            <button type="button"
+                                    class="action-btn start-btn"
+                                    onclick="startCleaning(@task.Id)">
+
+                                🧹 Temizliğe Başla
+
+                            </button>
+
+
+                            <button type="button"
+                                    class="action-btn maintenance-btn"
+                                    onclick="sendMaintenance(@task.Id)">
+
+                                🔧 Bakıma Gönder
+
+                            </button>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        }
+        else
+        {
+            <div class="empty-box">
+
+                <div class="empty-icon">
+                    🎉
+                </div>
+
+                <strong>
+                    Temizlenecek oda yok!
+                </strong>
+
+                <span>
+                    Şu anda bekleyen bir temizlik görevi bulunmuyor.
+                </span>
+
+            </div>
+        }
+
+    </section>
+
+
+
+    <section class="section" id="cleaning-section">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2>
+                    🟡 Devam Eden Temizlikler
+                </h2>
+
+                <p>
+                    Şu anda üzerinde çalışılan odalar
+                </p>
+
+            </div>
+
+            <span class="count-badge yellow">
+                @cleaningTasks.Count oda
+            </span>
+
+        </div>
+
+
+        @if (cleaningTasks.Any())
+        {
+            <div class="room-grid">
+
+                @foreach (var task in cleaningTasks)
+                {
+                    var roomNumber = task.Room?.RoomNumber ?? "-";
+
+                    <div class="room-card cleaning-card">
+
+                        <div class="room-top">
+
+                            <div class="room-icon yellow-icon">
+                                🧹
+                            </div>
+
+                            <span class="status-badge cleaning">
+                                🟡 Temizlikte
+                            </span>
+
+                        </div>
+
+
+                        <div class="room-number">
+                            Oda @roomNumber
+                        </div>
+
+
+                        <div class="floor-info">
+                            🧽 Temizlik devam ediyor
+                        </div>
+
+
+                        <div class="progress-area">
+
+                            <div class="progress-label">
+
+                                <span>
+                                    Durum
+                                </span>
+
+                                <strong>
+                                    Devam ediyor
+                                </strong>
+
+                            </div>
+
+
+                            <div class="progress-bar">
+
+                                <div class="progress-fill"></div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="card-actions">
+
+                            <button type="button"
+                                    class="action-btn complete-btn"
+                                    onclick="completeCleaning(@task.Id)">
+
+                                ✓ Temizliği Bitir
+
+                            </button>
+
+
+                            <button type="button"
+                                    class="action-btn maintenance-btn"
+                                    onclick="sendMaintenance(@task.Id)">
+
+                                🔧 Bakıma Gönder
+
+                            </button>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        }
+        else
+        {
+            <div class="empty-box small-empty">
+
+                <div class="empty-icon">
+                    🧽
+                </div>
+
+                <strong>
+                    Devam eden temizlik yok
+                </strong>
+
+                <span>
+                    Şu anda üzerinde çalışılan oda bulunmuyor.
+                </span>
+
+            </div>
+        }
+
+    </section>
+
+
+    <section class="section" id="maintenance-section">
+
+        @if (maintenanceTasks.Any())
+        {
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        🔧 Bakım Bekleyen Odalar
+                    </h2>
+
+                    <p>
+                        Teknik ekip tarafından kontrol edilmesi gereken odalar
+                    </p>
+
+                </div>
+
+                <span class="count-badge red">
+                    @maintenanceTasks.Count oda
+                </span>
+
+            </div>
+
+
+            <div class="room-grid">
+
+                @foreach (var task in maintenanceTasks)
+                {
+                    var roomNumber = task.Room?.RoomNumber ?? "-";
+
+                    <div class="room-card maintenance-card">
+
+                        <div class="room-top">
+
+                            <div class="room-icon red-icon">
+                                🔧
+                            </div>
+
+                            <span class="status-badge maintenance">
+                                🔧 Bakım
+                            </span>
+
+                        </div>
+
+
+                        <div class="room-number">
+                            Oda @roomNumber
+                        </div>
+
+
+                        <div class="floor-info">
+                            Teknik kontrol bekliyor
+                        </div>
+
+
+                        @if (!string.IsNullOrWhiteSpace(task.Notes))
+                        {
+                            <div class="notes">
+                                💬 @task.Notes
+                            </div>
+                        }
+
+
+                        <div class="maintenance-message">
+
+                            <strong>
+                                Bakım bildirimi oluşturuldu.
+                            </strong>
+
+                            <span>
+                                Oda teknik ekibe bildirildi.
+                            </span>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        }
+        else
+        {
+            <div class="section-header">
+
+                <div>
+
+                    <h2>
+                        🔧 Bakım Bekleyen Odalar
+                    </h2>
+
+                    <p>
+                        Teknik ekip tarafından kontrol edilmesi gereken odalar
+                    </p>
+
+                </div>
+
+                <span class="count-badge red">
+                    0 oda
+                </span>
+
+            </div>
+
+
+            <div class="empty-box small-empty">
+
+                <div class="empty-icon">
+                    🔧
+                </div>
+
+                <strong>
+                    Bakım bekleyen oda yok
+                </strong>
+
+                <span>
+                    Şu anda bakıma gönderilmiş bir oda bulunmuyor.
+                </span>
+
+            </div>
+        }
+
+    </section>
+
+
+
+    <section class="section history-section" id="history-section">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2>
+                    ✓ Son 5 Günde Temizlenenler
+                </h2>
+
+                <p>
+                    Yakın zamanda tamamlanan temizlik görevleri
+                </p>
+
+            </div>
+
+            <span class="count-badge green">
+                @completedTasks.Count oda
+            </span>
+
+        </div>
+
+
+        @if (completedTasks.Any())
+        {
+            <div class="completed-list">
+
+                @foreach (var task in completedTasks)
+                {
+                    var roomNumber = task.Room?.RoomNumber ?? "-";
+
+                    <div class="completed-item">
+
+                        <div class="completed-icon">
+                            ✓
+                        </div>
+
+
+                        <div class="completed-room">
+
+                            <strong>
+                                Oda @roomNumber
+                            </strong>
+
+                            <span>
+                                Temizlik tamamlandı
+                            </span>
+
+                        </div>
+
+
+                        <div class="completed-date">
+
+                            <strong>
+                                @task.TaskDate.ToString("dd.MM.yyyy")
+                            </strong>
+
+                            <span>
+                                @task.TaskDate.ToString("HH:mm")
+                            </span>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        }
+        else
+        {
+            <div class="empty-box small-empty">
+
+                <div class="empty-icon">
+                    📋
+                </div>
+
+                <strong>
+                    Son 5 günde tamamlanan görev yok
+                </strong>
+
+                <span>
+                    Tamamlanan temizlikler burada görünecek.
+                </span>
+
+            </div>
+        }
+
+    </section>
+
+
+    
+
+    <div id="priorityModal"
+         class="priority-modal-overlay"
+         style="display:none;">
+
+        <div class="priority-modal">
+
+            <h3>
+                Bakım Önceliği Seç
+            </h3>
+
+            <p>
+                Bu oda için bakım önceliğini belirleyin.
+            </p>
+
+
+            <div class="priority-options">
+
+                <button type="button"
+                        class="priority-option normal"
+                        onclick="confirmMaintenance('Normal')">
+
+                    Normal
+
+                </button>
+
+
+                <button type="button"
+                        class="priority-option acil"
+                        onclick="confirmMaintenance('Acil')">
+
+                    Acil
+
+                </button>
+
+
+                <button type="button"
+                        class="priority-option cok-acil"
+                        onclick="confirmMaintenance('Çok Acil')">
+
+                    Çok Acil
+
+                </button>
+
+            </div>
+
+
+            <button type="button"
+                    class="priority-cancel"
+                    onclick="closePriorityModal()">
+
+                Vazgeç
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        background: #f5f7fb;
+        color: #1f2937;
+    }
+
+    .cleaning-page {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 28px;
+    }
+
+    .welcome-badge {
+        display: inline-block;
+        padding: 7px 11px;
+        border-radius: 20px;
+        background: #ede9fe;
+        color: #6d28d9;
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 9px;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 31px;
+        font-weight: 750;
+    }
+
+    .page-header p {
+        margin: 7px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    .today-box {
+        background: white;
+        border-radius: 13px;
+        padding: 14px 20px;
+        min-width: 145px;
+        box-shadow: 0 4px 16px rgba(0,0,0,.05);
+        text-align: center;
+    }
+
+        .today-box span {
+            display: block;
+            color: #9ca3af;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .today-box strong {
+            font-size: 15px;
+        }
+
+
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 35px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 4px 18px rgba(0,0,0,.05);
+        cursor: pointer;
+        transition: .2s;
+        border: 1px solid transparent;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 25px rgba(0,0,0,.09);
+            border-color: #e5e7eb;
+        }
+
+        .stat-card:active {
+            transform: translateY(-1px);
+        }
+
+        .stat-card:focus-visible {
+            outline: 2px solid #4f46e5;
+            outline-offset: 2px;
+        }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .waiting-stat .stat-icon {
+        background: #fef3c7;
+    }
+
+    .cleaning-stat .stat-icon {
+        background: #fef3c7;
+    }
+
+    .completed-stat .stat-icon {
+        background: #dcfce7;
+    }
+
+    .maintenance-stat .stat-icon {
+        background: #fee2e2;
+    }
+
+    .stat-card span {
+        display: block;
+        color: #6b7280;
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+
+    .stat-card strong {
+        display: block;
+        font-size: 25px;
+    }
+
+    .stat-card small {
+        display: block;
+        color: #9ca3af;
+        font-size: 11px;
+        margin-top: 3px;
+    }
+
+
+
+    .section {
+        margin-bottom: 35px;
+        scroll-margin-top: 25px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 17px;
+        gap: 15px;
+    }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .section-header p {
+            margin: 5px 0 0;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+    .count-badge {
+        padding: 7px 12px;
+        background: #eef2ff;
+        color: #4338ca;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .count-badge.yellow {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .count-badge.green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .count-badge.red {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    .section.highlight {
+        animation: highlightPulse 1.1s ease;
+        border-radius: 18px;
+    }
+
+    @@keyframes highlightPulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(79,70,229,.35);
+        }
+
+        50% {
+            box-shadow: 0 0 0 10px rgba(79,70,229,0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(79,70,229,0);
+        }
+    }
+
+
+   
+
+    .room-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+    }
+
+    .room-card {
+        background: white;
+        border-radius: 17px;
+        padding: 20px;
+        box-shadow: 0 4px 18px rgba(0,0,0,.05);
+        border: 1px solid #eef0f4;
+        transition: .2s;
+    }
+
+        .room-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 25px rgba(0,0,0,.08);
+        }
+
+    .waiting-card {
+        border-top: 4px solid #f59e0b;
+    }
+
+    .cleaning-card {
+        border-top: 4px solid #fbbf24;
+    }
+
+    .maintenance-card {
+        border-top: 4px solid #ef4444;
+    }
+
+
+
+    .room-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .room-icon {
+        width: 47px;
+        height: 47px;
+        border-radius: 13px;
+        background: #eef2ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+    .yellow-icon {
+        background: #fef3c7;
+    }
+
+    .red-icon {
+        background: #fee2e2;
+    }
+
+
+
+    .status-badge {
+        padding: 6px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .status-badge.waiting {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status-badge.cleaning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status-badge.maintenance {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+
+
+    .room-number {
+        font-size: 25px;
+        font-weight: 750;
+        margin-bottom: 5px;
+    }
+
+    .floor-info {
+        color: #6b7280;
+        font-size: 12px;
+        margin-bottom: 17px;
+    }
+
+    .task-info {
+        padding: 12px;
+        border-radius: 10px;
+        background: #f8fafc;
+        margin-bottom: 12px;
+    }
+
+        .task-info span {
+            display: block;
+            color: #9ca3af;
+            font-size: 10px;
+            margin-bottom: 3px;
+        }
+
+        .task-info strong {
+            font-size: 12px;
+        }
+
+
+
+    .notes {
+        padding: 10px 12px;
+        border-radius: 9px;
+        background: #f8fafc;
+        color: #6b7280;
+        font-size: 11px;
+        margin-bottom: 13px;
+    }
+
+
+
+    .card-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .action-btn {
+        border: none;
+        border-radius: 10px;
+        padding: 11px 12px;
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+        .action-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+    .start-btn {
+        flex: 1;
+        background: #4f46e5;
+        color: white;
+    }
+
+        .start-btn:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+
+    .complete-btn {
+        flex: 1;
+        background: #16a34a;
+        color: white;
+    }
+
+        .complete-btn:hover {
+            background: #15803d;
+            transform: translateY(-1px);
+        }
+
+    .maintenance-btn {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+        .maintenance-btn:hover {
+            background: #fecaca;
+            transform: translateY(-1px);
+        }
+
+
+
+    .progress-area {
+        margin-top: 13px;
+        padding: 12px;
+        background: #fffbeb;
+        border-radius: 10px;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+        margin-bottom: 7px;
+    }
+
+        .progress-label span {
+            color: #9ca3af;
+        }
+
+        .progress-label strong {
+            color: #b45309;
+        }
+
+    .progress-bar {
+        height: 6px;
+        background: #fde68a;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        width: 55%;
+        height: 100%;
+        background: #f59e0b;
+        border-radius: 10px;
+    }
+
+
+
+    .maintenance-message {
+        margin-top: 14px;
+        padding: 12px;
+        background: #fff1f2;
+        border-radius: 10px;
+    }
+
+        .maintenance-message strong {
+            display: block;
+            color: #b91c1c;
+            font-size: 11px;
+        }
+
+        .maintenance-message span {
+            display: block;
+            margin-top: 4px;
+            color: #9f1239;
+            font-size: 10px;
+        }
+
+
+
+    .completed-list {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(0,0,0,.05);
+        overflow: hidden;
+    }
+
+    .completed-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 15px 18px;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+        .completed-item:last-child {
+            border-bottom: none;
+        }
+
+    .completed-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #dcfce7;
+        color: #15803d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+    }
+
+    .completed-room {
+        flex: 1;
+    }
+
+        .completed-room strong {
+            display: block;
+            font-size: 14px;
+        }
+
+        .completed-room span {
+            display: block;
+            color: #9ca3af;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+    .completed-date {
+        text-align: right;
+    }
+
+        .completed-date strong {
+            display: block;
+            font-size: 12px;
+        }
+
+        .completed-date span {
+            display: block;
+            color: #9ca3af;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+
+    .empty-box {
+        background: white;
+        border-radius: 16px;
+        padding: 50px 20px;
+        text-align: center;
+        box-shadow: 0 4px 18px rgba(0,0,0,.04);
+    }
+
+    .small-empty {
+        padding: 35px 20px;
+    }
+
+    .empty-icon {
+        font-size: 38px;
+        margin-bottom: 10px;
+    }
+
+    .empty-box strong {
+        display: block;
+        font-size: 15px;
+        color: #4b5563;
+    }
+
+    .empty-box span {
+        display: block;
+        color: #9ca3af;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+
+
+    .priority-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .priority-modal {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        width: 320px;
+        max-width: calc(100% - 30px);
+        text-align: center;
+        box-shadow: 0 20px 50px rgba(0,0,0,.2);
+    }
+
+        .priority-modal h3 {
+            margin: 0 0 6px;
+        }
+
+        .priority-modal p {
+            margin: 0 0 18px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+    .priority-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+    .priority-option {
+        border: none;
+        border-radius: 10px;
+        padding: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+    }
+
+        .priority-option.normal {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .priority-option.acil {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .priority-option.cok-acil {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    .priority-cancel {
+        border: none;
+        background: none;
+        color: #9ca3af;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+
+
+    @@media (max-width: 1100px) {
+
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .room-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+
+    @@media (max-width: 700px) {
+
+        .cleaning-page {
+            padding: 20px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .today-box {
+            width: 100%;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .room-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header {
+            align-items: flex-start;
+        }
+
+        .card-actions {
+            flex-direction: column;
+        }
+
+        .maintenance-btn {
+            width: 100%;
+        }
+
+        .completed-item {
+            flex-wrap: wrap;
+        }
+
+        .completed-date {
+            width: 100%;
+            text-align: left;
+            padding-left: 52px;
+        }
+    }
+
+</style>
+
+
+<script>
+
+
+    function goToSection(sectionId) {
+
+        const el = document.getElementById(sectionId);
+
+        if (!el) {
+            return;
+        }
+
+        el.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+        el.classList.remove("highlight");
+
+        void el.offsetWidth;
+
+        el.classList.add("highlight");
+
+        setTimeout(function () {
+
+            el.classList.remove("highlight");
+
+        }, 1200);
+    }
+
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        document.querySelectorAll(".stat-card").forEach(function (card) {
+
+            card.addEventListener("keydown", function (e) {
+
+                if (e.key === "Enter" || e.key === " ") {
+
+                    e.preventDefault();
+
+                    card.click();
+                }
+
+            });
+
+        });
+
+    });
+
+
+
+    async function getApiMessage(response) {
+
+        const text = await response.text();
+
+        if (!text) {
+            return "İşlem sırasında bir hata oluştu.";
+        }
+
+        try {
+
+            const data = JSON.parse(text);
+
+            return data.message ||
+                   data.title ||
+                   data.error ||
+                   "İşlem sırasında bir hata oluştu.";
+
+        }
+        catch {
+
+            return text;
+        }
+    }
+
+
+    
+
+    async function startCleaning(id) {
+
+        if (!id) {
+            alert("Geçersiz temizlik görevi.");
+            return;
+        }
+
+        const buttons = document.querySelectorAll(
+            `[onclick="startCleaning(${id})"]`
+        );
+
+        buttons.forEach(function (button) {
+            button.disabled = true;
+            button.innerText = "⏳ Başlatılıyor...";
+        });
+
+
+        try {
+
+            const response = await fetch(
+                `/api/CleaningTasks/${id}/start`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+
+            if (!response.ok) {
+
+                const message = await getApiMessage(response);
+
+                alert(message);
+
+                buttons.forEach(function (button) {
+                    button.disabled = false;
+                    button.innerText = "🧹 Temizliğe Başla";
+                });
+
+                return;
+            }
+
+
+            window.location.reload();
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert("Sunucuya bağlanırken bir hata oluştu.");
+
+            buttons.forEach(function (button) {
+                button.disabled = false;
+                button.innerText = "🧹 Temizliğe Başla";
+            });
+
+        }
+
+    }
+
+
+
+    async function completeCleaning(id) {
+
+        if (!id) {
+            alert("Geçersiz temizlik görevi.");
+            return;
+        }
+
+        const buttons = document.querySelectorAll(
+            `[onclick="completeCleaning(${id})"]`
+        );
+
+        buttons.forEach(function (button) {
+            button.disabled = true;
+            button.innerText = "⏳ Tamamlanıyor...";
+        });
+
+
+        try {
+
+            const response = await fetch(
+                `/api/CleaningTasks/${id}/complete`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+
+            if (!response.ok) {
+
+                const message = await getApiMessage(response);
+
+                alert(message);
+
+                buttons.forEach(function (button) {
+                    button.disabled = false;
+                    button.innerText = "✓ Temizliği Bitir";
+                });
+
+                return;
+            }
+
+
+            window.location.reload();
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert("Sunucuya bağlanırken bir hata oluştu.");
+
+            buttons.forEach(function (button) {
+                button.disabled = false;
+                button.innerText = "✓ Temizliği Bitir";
+            });
+
+        }
+
+    }
+
+
+
+    let pendingMaintenanceId = null;
+
+
+    function sendMaintenance(id) {
+
+        if (!id) {
+            alert("Geçersiz temizlik görevi.");
+            return;
+        }
+
+        pendingMaintenanceId = id;
+
+        const modal = document.getElementById("priorityModal");
+
+        if (modal) {
+            modal.style.display = "flex";
+        }
+
+    }
+
+
+    function closePriorityModal() {
+
+        pendingMaintenanceId = null;
+
+        const modal = document.getElementById("priorityModal");
+
+        if (modal) {
+            modal.style.display = "none";
+        }
+
+    }
+
+
+    
+
+    async function confirmMaintenance(priority) {
+
+        if (pendingMaintenanceId === null) {
+            return;
+        }
+
+
+        const id = pendingMaintenanceId;
+
+
+        const modal = document.getElementById("priorityModal");
+
+        if (modal) {
+            modal.style.display = "none";
+        }
+
+
+        try {
+
+            const response = await fetch(
+                `/api/CleaningTasks/${id}/maintenance`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        priority: priority
+                    })
+                }
+            );
+
+
+            if (!response.ok) {
+
+                const message = await getApiMessage(response);
+
+                alert(message);
+
+                pendingMaintenanceId = null;
+
+                if (modal) {
+                    modal.style.display = "none";
+                }
+
+                return;
+            }
+
+
+            pendingMaintenanceId = null;
+
+            window.location.reload();
+
+        }
+        catch (error) {
+
+            console.error(error);
+
+            alert("Sunucuya bağlanırken bir hata oluştu.");
+
+            pendingMaintenanceId = null;
+
+        }
+
+    }
+
+
+
+    document.addEventListener("click", function (event) {
+
+        const modal = document.getElementById("priorityModal");
+
+        if (!modal) {
+            return;
+        }
+
+        if (event.target === modal) {
+            closePriorityModal();
+        }
+
+    });
+
+
+    document.addEventListener("keydown", function (event) {
+
+        if (event.key === "Escape") {
+
+            if (pendingMaintenanceId !== null) {
+                closePriorityModal();
+            }
+
+        }
+
+    });
+
+</script>

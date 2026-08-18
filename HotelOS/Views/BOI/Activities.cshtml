@@ -1,0 +1,1812 @@
+﻿@model List<HotelOS.Models.Activity>
+
+@{
+    ViewData["Title"] = "Aktiviteler";
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aktiviteler - HotelOS</title>
+    <link rel="stylesheet" href="~/css/activities.css" />
+</head>
+
+<body>
+
+    <div class="activities-page">
+
+        <header class="activities-header">
+            <div>
+                <div class="breadcrumb">HotelOS / BOİ Müdürü / Aktiviteler</div>
+                <h1>📅 Aktiviteler</h1>
+                <p>Otelde gerçekleştirilecek aktiviteleri ve etkinlikleri yönetin.</p>
+            </div>
+
+            <a href="/BOI" class="back-btn">← Dashboard</a>
+        </header>
+
+        <section class="summary-grid">
+
+            <div class="summary-card">
+                <div class="summary-icon blue">📅</div>
+                <div>
+                    <span>Bugünkü Aktiviteler</span>
+                    <strong id="todayCount">0</strong>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-icon green">📆</div>
+                <div>
+                    <span>Bu Haftaki Aktiviteler</span>
+                    <strong id="weekCount">0</strong>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-icon orange">⏳</div>
+                <div>
+                    <span>Yaklaşan Aktiviteler</span>
+                    <strong id="upcomingCount">0</strong>
+                </div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-icon purple">✓</div>
+                <div>
+                    <span>Tamamlanan</span>
+                    <strong id="completedCount">0</strong>
+                </div>
+            </div>
+
+        </section>
+
+        <div class="content-grid">
+
+            <section class="panel">
+
+                <div class="panel-header">
+                    <div>
+                        <h2>Aktivite Takvimi</h2>
+                        <p>Tarihe göre planlanan aktiviteleri görüntüleyin.</p>
+                    </div>
+
+                    <button type="button"
+                            class="primary-btn"
+                            onclick="openActivityForm()">
+                        + Aktivite Ekle
+                    </button>
+                </div>
+
+                <div class="filters">
+
+                    <button type="button"
+                            class="filter-btn active"
+                            onclick="setFilter('today', this)">
+                        Bugün
+                    </button>
+
+                    <button type="button"
+                            class="filter-btn"
+                            onclick="setFilter('week', this)">
+                        Bu Hafta
+                    </button>
+
+                    <button type="button"
+                            class="filter-btn"
+                            onclick="setFilter('month', this)">
+                        Bu Ay
+                    </button>
+
+                    <button type="button"
+                            class="filter-btn"
+                            onclick="setFilter('past', this)">
+                        Geçmiş
+                    </button>
+
+                    <button type="button"
+                            class="filter-btn"
+                            onclick="setFilter('all', this)">
+                        Tümü
+                    </button>
+
+                </div>
+
+                <div id="activityList"></div>
+
+            </section>
+
+            <aside class="side-column">
+
+                <section class="panel">
+
+                    <div class="panel-header">
+                        <div>
+                            <h2>Aktivite Türleri</h2>
+                            <p>Etkinlik kategorileri</p>
+                        </div>
+                    </div>
+
+                    <div class="category-list">
+
+                        <button type="button" class="category" onclick="setTypeFilter('Eğlence')">
+                            <span>🎵</span>
+                            <strong>Eğlence</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Canlı Müzik')">
+                            <span>🎤</span>
+                            <strong>Canlı Müzik</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Konser')">
+                            <span>🎸</span>
+                            <strong>Konser</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Dans Gösterisi')">
+                            <span>💃</span>
+                            <strong>Dans Gösterisi</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Animasyon')">
+                            <span>🎭</span>
+                            <strong>Animasyon</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Spor')">
+                            <span>⚽</span>
+                            <strong>Spor</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Su Sporları')">
+                            <span>🏄</span>
+                            <strong>Su Sporları</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Fitness')">
+                            <span>🏋️</span>
+                            <strong>Fitness</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Yoga')">
+                            <span>🧘</span>
+                            <strong>Yoga</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Pilates')">
+                            <span>🤸</span>
+                            <strong>Pilates</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Wellness')">
+                            <span>🌿</span>
+                            <strong>Wellness</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Spa Etkinliği')">
+                            <span>🧖</span>
+                            <strong>Spa Etkinliği</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Çocuk Etkinliği')">
+                            <span>🧒</span>
+                            <strong>Çocuk Etkinliği</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Çocuk Kulübü')">
+                            <span>🧸</span>
+                            <strong>Çocuk Kulübü</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Atölye')">
+                            <span>🎨</span>
+                            <strong>Atölye</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Sanat')">
+                            <span>🖌️</span>
+                            <strong>Sanat</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('El Sanatları')">
+                            <span>🧵</span>
+                            <strong>El Sanatları</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Gastronomi')">
+                            <span>👨‍🍳</span>
+                            <strong>Gastronomi</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Tadım Etkinliği')">
+                            <span>🍴</span>
+                            <strong>Tadım Etkinliği</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Yarışma')">
+                            <span>🏆</span>
+                            <strong>Yarışma</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Turnuva')">
+                            <span>🥇</span>
+                            <strong>Turnuva</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Gezi / Tur')">
+                            <span>🚌</span>
+                            <strong>Gezi / Tur</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Doğa Aktivitesi')">
+                            <span>🌲</span>
+                            <strong>Doğa Aktivitesi</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Eğitim / Seminer')">
+                            <span>🎓</span>
+                            <strong>Eğitim / Seminer</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Toplantı')">
+                            <span>💼</span>
+                            <strong>Toplantı</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Özel Etkinlik')">
+                            <span>🎉</span>
+                            <strong>Özel Etkinlik</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="setTypeFilter('Diğer')">
+                            <span>📌</span>
+                            <strong>Diğer</strong>
+                        </button>
+
+                        <button type="button" class="category" onclick="clearTypeFilter()">
+                            <span>🔄</span>
+                            <strong>Tüm Türler</strong>
+                        </button>
+
+                    </div>
+
+                </section>
+
+                <section class="panel info-panel">
+
+                    <div class="info-icon">💡</div>
+
+                    <div>
+                        <h3>Aktivite Yönetimi</h3>
+                        <p>
+                            Otelde yapılacak etkinlikleri tarih, saat,
+                            alan ve sorumlu personel bilgileriyle planlayabilirsiniz.
+                        </p>
+                    </div>
+
+                </section>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+    <div id="activityModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h2 id="modalTitle">Yeni Aktivite</h2>
+                    <p>Otel için yeni bir aktivite planlayın.</p>
+                </div>
+
+                <button type="button"
+                        class="close-btn"
+                        onclick="closeActivityForm()">
+                    ×
+                </button>
+
+            </div>
+
+            <form id="activityForm">
+
+                <input type="hidden" id="editId" />
+
+                <div class="form-group">
+                    <label for="activityName">Aktivite Adı</label>
+
+                    <input type="text"
+                           id="activityName"
+                           placeholder="Örn. Canlı Müzik Gecesi"
+                           required />
+                </div>
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="activityDate">Tarih</label>
+
+                        <input type="date"
+                               id="activityDate"
+                               required />
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="activityType">Aktivite Türü</label>
+
+                        <select id="activityType" required>
+                            <option value="">Tür seçiniz</option>
+                            <option>Eğlence</option>
+                            <option>Canlı Müzik</option>
+                            <option>Konser</option>
+                            <option>Dans Gösterisi</option>
+                            <option>Animasyon</option>
+                            <option>Spor</option>
+                            <option>Su Sporları</option>
+                            <option>Fitness</option>
+                            <option>Yoga</option>
+                            <option>Pilates</option>
+                            <option>Wellness</option>
+                            <option>Spa Etkinliği</option>
+                            <option>Çocuk Etkinliği</option>
+                            <option>Çocuk Kulübü</option>
+                            <option>Atölye</option>
+                            <option>Sanat</option>
+                            <option>El Sanatları</option>
+                            <option>Gastronomi</option>
+                            <option>Tadım Etkinliği</option>
+                            <option>Yarışma</option>
+                            <option>Turnuva</option>
+                            <option>Gezi / Tur</option>
+                            <option>Doğa Aktivitesi</option>
+                            <option>Eğitim / Seminer</option>
+                            <option>Toplantı</option>
+                            <option>Özel Etkinlik</option>
+                            <option>Diğer</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="startTime">Başlangıç Saati</label>
+
+                        <input type="time"
+                               id="startTime"
+                               step="60"
+                               required />
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="endTime">Bitiş Saati</label>
+
+                        <input type="time"
+                               id="endTime"
+                               step="60"
+                               required />
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="activityArea">Aktivite Alanı</label>
+
+                    <select id="activityArea" required>
+                        <option value="">Alan seçiniz</option>
+                        <option>Ön Bahçe</option>
+                        <option>Arka Bahçe</option>
+                        <option>Sahil</option>
+                        <option>Kapalı Havuz</option>
+                        <option>Açık Havuz</option>
+                        <option>Lobi</option>
+                        <option>Etkinlik Salonu</option>
+                        <option>Teras</option>
+                        <option>Spa & Wellness Alanı</option>
+                        <option>Çocuk Kulübü</option>
+                        <option>Spor Alanı</option>
+                        <option>Fitness Salonu</option>
+                        <option>Tenis Kortu</option>
+                        <option>Basketbol Sahası</option>
+                        <option>Plaj Alanı</option>
+                        <option>Amfitiyatro</option>
+                        <option>Konferans Salonu</option>
+                        <option>Toplantı Salonu</option>
+                        <option>Restoran</option>
+                        <option>Bar</option>
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="responsible">Sorumlu Personel</label>
+
+                    <select id="responsible">
+                        <option value="">Sorumlu personel seçiniz</option>
+                        <option>Aktivite Görevlisi</option>
+                        <option>Animasyon Sorumlusu</option>
+                        <option>Wellness Sorumlusu</option>
+                        <option>Spor Eğitmeni</option>
+                        <option>Çocuk Kulübü Görevlisi</option>
+                        <option>Etkinlik Sorumlusu</option>
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="activityStatus">Durum</label>
+
+                    <select id="activityStatus">
+                        <option>Planlandı</option>
+                        <option>Devam Ediyor</option>
+                        <option>Tamamlandı</option>
+                        <option>İptal Edildi</option>
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="description">Açıklama</label>
+
+                    <textarea id="description"
+                              rows="4"
+                              placeholder="Aktivite hakkında kısa açıklama..."></textarea>
+
+                </div>
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            class="secondary-btn"
+                            onclick="closeActivityForm()">
+                        Vazgeç
+                    </button>
+
+                    <button type="submit"
+                            class="primary-btn"
+                            id="saveButton">
+                        Aktiviteyi Kaydet
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        let activities = @Html.Raw(
+                        System.Text.Json.JsonSerializer.Serialize(
+                                Model ?? new List<HotelOS.Models.Activity>()
+                        )
+                );
+
+        let currentFilter = "today";
+        let currentTypeFilter = null;
+
+        const activityDate = document.getElementById("activityDate");
+        const startTime = document.getElementById("startTime");
+        const endTime = document.getElementById("endTime");
+
+        /*
+         * BURADA ESKİ KODDA FAZLADAN } VARDI.
+         * O yüzden bütün JavaScript çalışmıyordu.
+         */
+
+        function normalizeActivity(activity) {
+
+            const rawDate =
+                activity.ActivityDate ??
+                activity.activityDate ??
+                "";
+
+            let date = "";
+
+            if (rawDate) {
+
+                const dateString = String(rawDate);
+
+                if (dateString.includes("T")) {
+                    date = dateString.substring(0, 10);
+                }
+                else {
+                    date = dateString.substring(0, 10);
+                }
+            }
+
+            return {
+
+                id:
+                    activity.Id ??
+                    activity.id,
+
+                name:
+                    activity.Name ??
+                    activity.name ??
+                    "",
+
+                date: date,
+
+                startTime:
+                    normalizeTime(
+                        activity.StartTime ??
+                        activity.startTime
+                    ),
+
+                endTime:
+                    normalizeTime(
+                        activity.EndTime ??
+                        activity.endTime
+                    ),
+
+                type:
+                    activity.Type ??
+                    activity.type ??
+                    "",
+
+                area:
+                    activity.Area ??
+                    activity.area ??
+                    "",
+
+                responsible:
+                    activity.Responsible ??
+                    activity.responsible ??
+                    "",
+
+                status:
+                    activity.Status ??
+                    activity.status ??
+                    "Planlandı",
+
+                description:
+                    activity.Description ??
+                    activity.description ??
+                    ""
+            };
+        }
+
+        function normalizeTime(value) {
+
+            if (!value) {
+                return "";
+            }
+
+            const text = String(value);
+
+            if (text.includes("T")) {
+                return text.substring(11, 16);
+            }
+
+            return text.substring(0, 5);
+        }
+
+        activities = Array.isArray(activities)
+            ? activities.map(normalizeActivity)
+            : [];
+
+        function todayString() {
+
+            const now = new Date();
+
+            return now.getFullYear() + "-" +
+                String(now.getMonth() + 1).padStart(2, "0") + "-" +
+                String(now.getDate()).padStart(2, "0");
+        }
+
+        function currentTimeString() {
+
+            const now = new Date();
+
+            return String(now.getHours()).padStart(2, "0") +
+                ":" +
+                String(now.getMinutes()).padStart(2, "0");
+        }
+
+        function openActivityForm() {
+
+            const form =
+                document.getElementById("activityForm");
+
+            form.reset();
+
+            document.getElementById("editId").value = "";
+
+            document.getElementById("modalTitle").textContent =
+                "Yeni Aktivite";
+
+            document.getElementById("saveButton").textContent =
+                "Aktiviteyi Kaydet";
+
+            activityDate.value = todayString();
+
+            startTime.value = "";
+            endTime.value = "";
+
+            startTime.removeAttribute("min");
+            endTime.removeAttribute("min");
+
+            /*
+             * Bugünün tarihindeysek geçmiş saatleri engelle.
+             */
+            startTime.min = currentTimeString();
+
+            document
+                .getElementById("activityModal")
+                .classList.add("show");
+        }
+
+        function closeActivityForm() {
+
+            document
+                .getElementById("activityModal")
+                .classList.remove("show");
+        }
+
+        activityDate.addEventListener(
+            "change",
+            function () {
+
+                startTime.removeAttribute("min");
+                endTime.removeAttribute("min");
+
+                if (activityDate.value === todayString()) {
+
+                    startTime.min =
+                        currentTimeString();
+
+                }
+
+                if (
+                    startTime.value &&
+                    activityDate.value === todayString() &&
+                    startTime.value < currentTimeString()
+                ) {
+
+                    startTime.value = "";
+                    endTime.value = "";
+                }
+
+            }
+        );
+
+        startTime.addEventListener(
+            "change",
+            function () {
+
+                if (!startTime.value) {
+
+                    endTime.removeAttribute("min");
+
+                    return;
+                }
+
+                if (
+                    activityDate.value === todayString() &&
+                    startTime.value < currentTimeString()
+                ) {
+
+                    alert(
+                        "Bugün için geçmiş bir saat seçemezsiniz."
+                    );
+
+                    startTime.value = "";
+                    endTime.value = "";
+
+                    return;
+                }
+
+                endTime.min =
+                    startTime.value;
+
+                if (
+                    endTime.value &&
+                    endTime.value <= startTime.value
+                ) {
+
+                    endTime.value = "";
+                }
+            }
+        );
+
+        endTime.addEventListener(
+            "change",
+            function () {
+
+                if (
+                    startTime.value &&
+                    endTime.value &&
+                    endTime.value <= startTime.value
+                ) {
+
+                    alert(
+                        "Bitiş saati başlangıç saatinden sonra olmalıdır."
+                    );
+
+                    endTime.value = "";
+                }
+            }
+        );
+
+        document
+            .getElementById("activityForm")
+            .addEventListener(
+                "submit",
+                async function (event) {
+
+                    event.preventDefault();
+
+                    const name =
+                        document
+                            .getElementById("activityName")
+                            .value
+                            .trim();
+
+                    const date =
+                        activityDate.value;
+
+                    const start =
+                        startTime.value;
+
+                    const end =
+                        endTime.value;
+
+                    const type =
+                        document
+                            .getElementById("activityType")
+                            .value;
+
+                    const area =
+                        document
+                            .getElementById("activityArea")
+                            .value;
+
+                    const responsible =
+                        document
+                            .getElementById("responsible")
+                            .value;
+
+                    const status =
+                        document
+                            .getElementById("activityStatus")
+                            .value;
+
+                    const description =
+                        document
+                            .getElementById("description")
+                            .value
+                            .trim();
+
+                    const editId =
+                        document
+                            .getElementById("editId")
+                            .value;
+
+                    if (
+                        !name ||
+                        !date ||
+                        !start ||
+                        !end ||
+                        !type ||
+                        !area
+                    ) {
+
+                        alert(
+                            "Lütfen zorunlu alanları doldurun."
+                        );
+
+                        return;
+                    }
+
+                    if (
+                        date === todayString() &&
+                        start < currentTimeString() &&
+                        !editId
+                    ) {
+
+                        alert(
+                            "Bugün için geçmiş bir saat seçemezsiniz."
+                        );
+
+                        return;
+                    }
+
+                    if (end <= start) {
+
+                        alert(
+                            "Bitiş saati başlangıç saatinden sonra olmalıdır."
+                        );
+
+                        return;
+                    }
+
+                    
+                    const data = {
+
+                        Name: name,
+
+                        ActivityDate:
+                            date +
+                            "T00:00:00.000Z",
+
+                        StartTime:
+                            start +
+                            ":00",
+
+                        EndTime:
+                            end +
+                            ":00",
+
+                        Type: type,
+
+                        Area: area,
+
+                        Responsible: responsible,
+
+                        Status: status,
+
+                        Description: description
+                    };
+
+                    try {
+
+                        let response;
+
+                        if (editId) {
+
+                            response =
+                                await fetch(
+                                    "/Activities/Edit?id=" +
+                                    encodeURIComponent(editId),
+                                    {
+                                        method: "PUT",
+
+                                        headers: {
+                                            "Content-Type":
+                                                "application/json"
+                                        },
+
+                                        body:
+                                            JSON.stringify({
+                                                Id:
+                                                    Number(editId),
+                                                ...data
+                                            })
+                                    }
+                                );
+
+                        }
+                        else {
+
+                            response =
+                                await fetch(
+                                    "/Activities/Create",
+                                    {
+                                        method: "POST",
+
+                                        headers: {
+                                            "Content-Type":
+                                                "application/json"
+                                        },
+
+                                        body:
+                                            JSON.stringify(data)
+                                    }
+                                );
+                        }
+
+                        if (!response.ok) {
+
+                            const errorText =
+                                await response.text();
+
+                            console.error(
+                                "AKTİVİTE HATASI:",
+                                errorText
+                            );
+
+                            alert(
+                                "Aktivite kaydedilemedi. Detay için F12 > Console bölümüne bak."
+                            );
+
+                            return;
+                        }
+
+                        const savedActivity =
+                            await response.json();
+
+                        const normalized =
+                            normalizeActivity(
+                                savedActivity
+                            );
+
+                        if (editId) {
+
+                            const index =
+                                activities.findIndex(
+                                    x =>
+                                        x.id ===
+                                        Number(editId)
+                                );
+
+                            if (index !== -1) {
+
+                                activities[index] =
+                                    normalized;
+                            }
+
+                        }
+                        else {
+
+                            activities.push(
+                                normalized
+                            );
+                        }
+
+                        closeActivityForm();
+
+                        updateSummary();
+
+                        renderActivities();
+
+                    }
+                    catch (error) {
+
+                        console.error(error);
+
+                        alert(
+                            "Sunucuya bağlanırken bir hata oluştu."
+                        );
+                    }
+                }
+            );
+
+        function setFilter(
+            filter,
+            button
+        ) {
+
+            currentFilter =
+                filter;
+
+            currentTypeFilter =
+                null;
+
+            document
+                .querySelectorAll(".filter-btn")
+                .forEach(
+                    function (item) {
+
+                        item.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+            if (button) {
+
+                button.classList.add(
+                    "active"
+                );
+            }
+
+            renderActivities();
+        }
+
+        function setTypeFilter(type) {
+
+            currentTypeFilter =
+                type;
+
+            document
+                .querySelectorAll(".filter-btn")
+                .forEach(
+                    function (item) {
+
+                        item.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+            renderActivities();
+        }
+
+        function clearTypeFilter() {
+
+            currentTypeFilter =
+                null;
+
+            currentFilter =
+                "today";
+
+            document
+                .querySelectorAll(".filter-btn")
+                .forEach(
+                    function (item) {
+
+                        item.classList.remove(
+                            "active"
+                        );
+                    }
+                );
+
+            const todayButton =
+                document.querySelector(
+                    '.filter-btn[onclick*="today"]'
+                );
+
+            if (todayButton) {
+
+                todayButton.classList.add(
+                    "active"
+                );
+            }
+
+            renderActivities();
+        }
+
+        function getFilteredActivities() {
+
+            let result =
+                activities.slice();
+
+            if (currentTypeFilter) {
+
+                result =
+                    result.filter(
+                        x =>
+                            x.type ===
+                            currentTypeFilter
+                    );
+            }
+
+            const now =
+                new Date();
+
+            if (
+                currentFilter ===
+                "today"
+            ) {
+
+                result =
+                    result.filter(
+                        x =>
+                            x.date ===
+                            todayString()
+                    );
+            }
+
+            else if (
+                currentFilter ===
+                "week"
+            ) {
+
+                const start =
+                    new Date(now);
+
+                start.setHours(
+                    0,
+                    0,
+                    0,
+                    0
+                );
+
+                const day =
+                    start.getDay();
+
+                const difference =
+                    day === 0
+                        ? -6
+                        : 1 - day;
+
+                start.setDate(
+                    start.getDate() +
+                    difference
+                );
+
+                const end =
+                    new Date(start);
+
+                end.setDate(
+                    end.getDate() +
+                    6
+                );
+
+                end.setHours(
+                    23,
+                    59,
+                    59,
+                    999
+                );
+
+                result =
+                    result.filter(
+                        function (x) {
+
+                            if (!x.date) {
+                                return false;
+                            }
+
+                            const date =
+                                new Date(
+                                    x.date +
+                                    "T00:00:00"
+                                );
+
+                            return (
+                                date >= start &&
+                                date <= end
+                            );
+                        }
+                    );
+            }
+
+            else if (
+                currentFilter ===
+                "month"
+            ) {
+
+                result =
+                    result.filter(
+                        function (x) {
+
+                            if (!x.date) {
+                                return false;
+                            }
+
+                            const date =
+                                new Date(
+                                    x.date +
+                                    "T00:00:00"
+                                );
+
+                            return (
+                                date.getMonth() ===
+                                    now.getMonth() &&
+                                date.getFullYear() ===
+                                    now.getFullYear()
+                            );
+                        }
+                    );
+            }
+
+            else if (
+                currentFilter ===
+                "past"
+            ) {
+
+                result =
+                    result.filter(
+                        function (x) {
+
+                            if (
+                                !x.date ||
+                                !x.endTime
+                            ) {
+                                return false;
+                            }
+
+                            const date =
+                                new Date(
+                                    x.date +
+                                    "T" +
+                                    x.endTime
+                                );
+
+                            return date < now;
+                        }
+                    );
+            }
+
+            
+
+            return result;
+        }
+
+        function renderActivities() {
+
+            const list =
+                document.getElementById(
+                    "activityList"
+                );
+
+            const filtered =
+                getFilteredActivities();
+
+            list.innerHTML = "";
+
+            if (
+                filtered.length ===
+                0
+            ) {
+
+                list.innerHTML =
+                    '<div class="empty-state">' +
+
+                        '<div class="empty-icon">📅</div>' +
+
+                        '<h3>Henüz aktivite bulunmuyor</h3>' +
+
+                        '<p>Seçtiğiniz filtreye uygun aktivite bulunamadı.</p>' +
+
+                        '<button type="button" class="primary-btn" onclick="openActivityForm()">' +
+                            '+ Aktivite Ekle' +
+                        '</button>' +
+
+                    '</div>';
+
+                return;
+            }
+
+            filtered.sort(
+                function (a, b) {
+
+                    const first =
+                        new Date(
+                            a.date +
+                            "T" +
+                            a.startTime
+                        );
+
+                    const second =
+                        new Date(
+                            b.date +
+                            "T" +
+                            b.startTime
+                        );
+
+                    return first - second;
+                }
+            );
+
+            filtered.forEach(
+                function (activity) {
+
+                    const card =
+                        document.createElement(
+                            "div"
+                        );
+
+                    card.className =
+                        "activity-card";
+
+                    card.innerHTML =
+
+                        '<div class="activity-date">' +
+
+                            '<strong>' +
+                                formatDate(
+                                    activity.date
+                                ) +
+                            '</strong>' +
+
+                            '<span>' +
+                                escapeHtml(
+                                    activity.startTime
+                                ) +
+                                ' - ' +
+                                escapeHtml(
+                                    activity.endTime
+                                ) +
+                            '</span>' +
+
+                        '</div>' +
+
+                        '<div class="activity-main">' +
+
+                            '<div class="activity-title-row">' +
+
+                                '<h3>' +
+                                    escapeHtml(
+                                        activity.name
+                                    ) +
+                                '</h3>' +
+
+                                '<span class="status ' +
+                                    getStatusClass(
+                                        activity.status
+                                    ) +
+                                '">' +
+
+                                    escapeHtml(
+                                        activity.status
+                                    ) +
+
+                                '</span>' +
+
+                            '</div>' +
+
+                            '<div class="activity-details">' +
+
+                                '<span>📍 ' +
+                                    escapeHtml(
+                                        activity.area
+                                    ) +
+                                '</span>' +
+
+                                '<span>🏷️ ' +
+                                    escapeHtml(
+                                        activity.type
+                                    ) +
+                                '</span>' +
+
+                                (
+                                    activity.responsible
+                                        ? '<span>👤 ' +
+                                            escapeHtml(
+                                                activity.responsible
+                                            ) +
+                                          '</span>'
+                                        : ''
+                                ) +
+
+                            '</div>' +
+
+                            (
+                                activity.description
+                                    ? '<p class="activity-description">' +
+                                        escapeHtml(
+                                            activity.description
+                                        ) +
+                                      '</p>'
+                                    : ''
+                            ) +
+
+                        '</div>' +
+
+                        '<div class="activity-actions">' +
+
+                            '<button type="button" class="edit-btn" onclick="editActivity(' +
+                                activity.id +
+                            ')">' +
+                                'Düzenle' +
+                            '</button>' +
+
+                            '<button type="button" class="delete-btn" onclick="deleteActivity(' +
+                                activity.id +
+                            ')">' +
+                                'Sil' +
+                            '</button>' +
+
+                        '</div>';
+
+                    list.appendChild(card);
+                }
+            );
+        }
+
+        function editActivity(id) {
+
+            const activity =
+                activities.find(
+                    x =>
+                        x.id ===
+                        id
+                );
+
+            if (!activity) {
+                return;
+            }
+
+            document.getElementById(
+                "editId"
+            ).value =
+                activity.id;
+
+            document.getElementById(
+                "activityName"
+            ).value =
+                activity.name;
+
+            activityDate.value =
+                activity.date;
+
+            startTime.value =
+                activity.startTime;
+
+            endTime.value =
+                activity.endTime;
+
+            document.getElementById(
+                "activityType"
+            ).value =
+                activity.type;
+
+            document.getElementById(
+                "activityArea"
+            ).value =
+                activity.area;
+
+            document.getElementById(
+                "responsible"
+            ).value =
+                activity.responsible;
+
+            document.getElementById(
+                "activityStatus"
+            ).value =
+                activity.status;
+
+            document.getElementById(
+                "description"
+            ).value =
+                activity.description;
+
+            document.getElementById(
+                "modalTitle"
+            ).textContent =
+                "Aktiviteyi Düzenle";
+
+            document.getElementById(
+                "saveButton"
+            ).textContent =
+                "Değişiklikleri Kaydet";
+
+          
+
+            startTime.removeAttribute(
+                "min"
+            );
+
+            endTime.removeAttribute(
+                "min"
+            );
+
+            if (
+                activity.date ===
+                todayString()
+            ) {
+
+                startTime.min =
+                    activity.startTime;
+            }
+
+            endTime.min =
+                activity.startTime;
+
+            document
+                .getElementById(
+                    "activityModal"
+                )
+                .classList.add(
+                    "show"
+                );
+        }
+
+        async function deleteActivity(id) {
+
+            const activity =
+                activities.find(
+                    x =>
+                        x.id ===
+                        id
+                );
+
+            if (!activity) {
+                return;
+            }
+
+            if (
+                !confirm(
+                    '"' +
+                    activity.name +
+                    '" aktivitesini silmek istediğinize emin misiniz?'
+                )
+            ) {
+
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/Activities/Delete?id=" +
+                        encodeURIComponent(id),
+                        {
+                            method:
+                                "DELETE"
+                        }
+                    );
+
+                if (!response.ok) {
+
+                    alert(
+                        "Aktivite silinemedi."
+                    );
+
+                    return;
+                }
+
+                activities =
+                    activities.filter(
+                        x =>
+                            x.id !==
+                            id
+                    );
+
+                updateSummary();
+
+                renderActivities();
+
+            }
+            catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Sunucuya bağlanırken bir hata oluştu."
+                );
+            }
+        }
+
+        function updateSummary() {
+
+            const today =
+                todayString();
+
+            const todayCount =
+                activities.filter(
+                    x =>
+                        x.date ===
+                        today
+                ).length;
+
+            const weekCount =
+                getWeekActivities()
+                    .length;
+
+            const completedCount =
+                activities.filter(
+                    x =>
+                        x.status ===
+                        "Tamamlandı"
+                ).length;
+
+            const now =
+                new Date();
+
+            const upcomingCount =
+                activities.filter(
+                    function (x) {
+
+                        if (
+                            !x.date ||
+                            !x.startTime
+                        ) {
+                            return false;
+                        }
+
+                        const date =
+                            new Date(
+                                x.date +
+                                "T" +
+                                x.startTime
+                            );
+
+                        return (
+                            date >= now &&
+                            x.status !==
+                                "Tamamlandı" &&
+                            x.status !==
+                                "İptal Edildi"
+                        );
+                    }
+                ).length;
+
+            document.getElementById(
+                "todayCount"
+            ).textContent =
+                todayCount;
+
+            document.getElementById(
+                "weekCount"
+            ).textContent =
+                weekCount;
+
+            document.getElementById(
+                "upcomingCount"
+            ).textContent =
+                upcomingCount;
+
+            document.getElementById(
+                "completedCount"
+            ).textContent =
+                completedCount;
+        }
+
+        function getWeekActivities() {
+
+            const today =
+                new Date();
+
+            today.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+            const day =
+                today.getDay();
+
+            const difference =
+                day === 0
+                    ? -6
+                    : 1 - day;
+
+            const start =
+                new Date(today);
+
+            start.setDate(
+                start.getDate() +
+                difference
+            );
+
+            const end =
+                new Date(start);
+
+            end.setDate(
+                end.getDate() +
+                6
+            );
+
+            end.setHours(
+                23,
+                59,
+                59,
+                999
+            );
+
+            return activities.filter(
+                function (x) {
+
+                    if (!x.date) {
+                        return false;
+                    }
+
+                    const date =
+                        new Date(
+                            x.date +
+                            "T00:00:00"
+                        );
+
+                    return (
+                        date >= start &&
+                        date <= end
+                    );
+                }
+            );
+        }
+
+        function formatDate(dateString) {
+
+            if (!dateString) {
+                return "Tarih yok";
+            }
+
+            const date =
+                new Date(
+                    dateString +
+                    "T00:00:00"
+                );
+
+            if (
+                Number.isNaN(
+                    date.getTime()
+                )
+            ) {
+
+                return "Tarih yok";
+            }
+
+            return date.toLocaleDateString(
+                "tr-TR",
+                {
+                    day:
+                        "2-digit",
+                    month:
+                        "short",
+                    year:
+                        "numeric"
+                }
+            );
+        }
+
+        function getStatusClass(status) {
+
+            if (
+                status ===
+                "Planlandı"
+            ) {
+                return "planned";
+            }
+
+            if (
+                status ===
+                "Devam Ediyor"
+            ) {
+                return "ongoing";
+            }
+
+            if (
+                status ===
+                "Tamamlandı"
+            ) {
+                return "completed";
+            }
+
+            if (
+                status ===
+                "İptal Edildi"
+            ) {
+                return "cancelled";
+            }
+
+            return "";
+        }
+
+        function escapeHtml(text) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+            div.textContent =
+                text || "";
+
+            return div.innerHTML;
+        }
+
+        window.addEventListener(
+            "click",
+            function (event) {
+
+                const modal =
+                    document.getElementById(
+                        "activityModal"
+                    );
+
+                if (
+                    event.target ===
+                    modal
+                ) {
+
+                    closeActivityForm();
+                }
+            }
+        );
+
+        
+        renderActivities();
+
+        updateSummary();
+
+    </script>
+
+</body>
+</html>

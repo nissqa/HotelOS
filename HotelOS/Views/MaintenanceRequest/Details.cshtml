@@ -1,0 +1,661 @@
+﻿@model HotelOS.Models.MaintenanceRequest
+
+@{
+    ViewData["Title"] = "Bakım Talebi Detayı";
+
+    var room = Model.Room;
+    var employee = Model.Employee;
+
+    var roomNumber = room?.RoomNumber ?? "-";
+
+    var employeeName = employee != null
+        ? employee.FirstName + " " + employee.LastName
+        : "Atanmamış";
+
+    var statusClass = Model.Status switch
+    {
+        "Bekliyor" => "pending",
+        "Devam Ediyor" => "progress",
+        "Tamamlandı" => "completed",
+        "İptal" => "cancelled",
+        _ => "unknown"
+    };
+
+    var priorityClass = Model.Priority switch
+    {
+        "Çok Acil" => "critical",
+        "Acil" => "urgent",
+        "Yüksek" => "high",
+        "Normal" => "normal",
+        "Düşük" => "low",
+        _ => "unknown"
+    };
+}
+
+<div class="details-page">
+
+    <div class="top-bar">
+        <div>
+            <h1>🔧 Bakım Talebi Detayı</h1>
+            <p>Oda bakım talebinin detaylarını görüntüleyin.</p>
+        </div>
+
+        <a href="/MaintenancePanel/Index" class="back-btn">
+            ← Bakım Taleplerine Dön
+        </a>
+    </div>
+
+    
+    <div class="quick-summary">
+        <div class="quick-item">
+            <span>Oda</span>
+            <strong>🛏️ @roomNumber</strong>
+        </div>
+        <div class="quick-item">
+            <span>Durum</span>
+            <strong><span class="status @statusClass">● @(Model.Status ?? "Belirsiz")</span></strong>
+        </div>
+        <div class="quick-item">
+            <span>Öncelik</span>
+            <strong><span class="priority @priorityClass">@(Model.Priority ?? "Belirtilmemiş")</span></strong>
+        </div>
+        <div class="quick-item">
+            <span>Talep Tarihi</span>
+            <strong>@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</strong>
+        </div>
+    </div>
+
+    <div class="details-grid">
+
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="header-icon purple">🔧</div>
+                <div>
+                    <h2>Bakım Talebi</h2>
+                    <span>Talep bilgileri</span>
+                </div>
+            </div>
+
+            <div class="info-list">
+                <div class="info-row">
+                    <span>Talep Başlığı</span>
+                    <strong>@(string.IsNullOrWhiteSpace(Model.Title) ? "Bakım Talebi" : Model.Title)</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Kat</span>
+                    <strong>@(room?.Floor.ToString() ?? "-")</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Oluşturulma Tarihi</span>
+                    <strong>@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="header-icon blue">👨‍🔧</div>
+                <div>
+                    <h2>Personel Bilgileri</h2>
+                    <span>Bakımla ilgilenen personel</span>
+                </div>
+            </div>
+
+            @if (employee != null)
+            {
+                <div class="employee-box">
+                    <div class="big-avatar">
+                        @if (!string.IsNullOrWhiteSpace(employee.FirstName))
+                        {
+                            @employee.FirstName.Substring(0, 1).ToUpper()
+                        }
+                        else
+                        {
+                            <span>?</span>
+                        }
+                    </div>
+
+                    <div>
+                        <h3>@employeeName</h3>
+
+                        @if (!string.IsNullOrWhiteSpace(employee.Email))
+                        {
+                            <p>📧 @employee.Email</p>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(employee.Phone))
+                        {
+                            <p>📞 @employee.Phone</p>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="unassigned">
+                    <div class="unassigned-icon">👤</div>
+                    <strong>Henüz personel atanmadı</strong>
+                    <span>Bu bakım talebine henüz bir personel atanmamış.</span>
+                </div>
+            }
+        </div>
+
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="header-icon orange">📝</div>
+                <div>
+                    <h2>Bakım Açıklaması</h2>
+                    <span>Arıza ve bakım detayları</span>
+                </div>
+            </div>
+
+            <div class="description-box">
+                @if (!string.IsNullOrWhiteSpace(Model.Description))
+                {
+                    <p>@Model.Description</p>
+                }
+                else
+                {
+                    <div class="no-description">📝 Açıklama girilmemiş.</div>
+                }
+            </div>
+        </div>
+
+        <div class="detail-card">
+            <div class="card-header">
+                <div class="header-icon green">🏨</div>
+                <div>
+                    <h2>Oda Bilgileri</h2>
+                    <span>Bakım yapılacak oda</span>
+                </div>
+            </div>
+
+            <div class="room-summary">
+                <div class="room-number">
+                    🛏️
+                    <strong>@roomNumber</strong>
+                </div>
+
+                <div class="room-status-text">
+                    <span>Talep</span>
+                    <strong>@(string.IsNullOrWhiteSpace(Model.Title) ? "Bakım Talebi" : Model.Title)</strong>
+                    <small>Kat: @(room?.Floor.ToString() ?? "-")</small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="detail-actions">
+        <form asp-controller="MaintenancePanel" asp-action="Escalate" method="post"
+              onsubmit="return confirm('Önceliği bir kademe artırmak istediğinize emin misiniz?');">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="action-btn escalate-btn" @(Model.Priority == "Çok Acil" ? "disabled" : "")>
+                🔺 <span>@(Model.Priority == "Çok Acil" ? "Çok Acil" : "Aciliyet Artır")</span>
+            </button>
+        </form>
+
+        <form asp-controller="MaintenancePanel" asp-action="Complete" method="post"
+              onsubmit="return confirm('Bu bakım talebini tamamlandı olarak işaretlemek istediğinize emin misiniz?');">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="action-btn complete-btn">✓ <span>Tamamla</span></button>
+        </form>
+
+        <form asp-controller="MaintenancePanel" asp-action="Cancel" method="post"
+              onsubmit="return confirm('Bu bakım talebini iptal etmek istediğinize emin misiniz?');">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <button type="submit" class="action-btn cancel-btn">✕ <span>İptal</span></button>
+        </form>
+    </div>
+
+</div>
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: #f5f7fb;
+        color: #1f2937;
+    }
+
+    .details-page {
+        padding: 30px;
+        min-height: 100vh;
+    }
+
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .top-bar p {
+            margin-top: 7px;
+            color: #6b7280;
+        }
+
+    .back-btn {
+        text-decoration: none;
+        background: white;
+        color: #4338ca;
+        border: 1px solid #c7d2fe;
+        padding: 11px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: .2s;
+        white-space: nowrap;
+    }
+
+        .back-btn:hover {
+            background: #eef2ff;
+            transform: translateY(-1px);
+        }
+
+    .quick-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        background: white;
+        border-radius: 14px;
+        padding: 16px 20px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.05);
+        margin-bottom: 25px;
+    }
+
+    .quick-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+        .quick-item span {
+            color: #9ca3af;
+            font-size: 11px;
+        }
+
+        .quick-item strong {
+            font-size: 14px;
+        }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .detail-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #eee;
+        margin-bottom: 18px;
+    }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .card-header span {
+            display: block;
+            margin-top: 4px;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+    .header-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+        .header-icon.purple {
+            background: #ede9fe;
+        }
+
+        .header-icon.orange {
+            background: #ffedd5;
+        }
+
+        .header-icon.blue {
+            background: #dbeafe;
+        }
+
+        .header-icon.red {
+            background: #fee2e2;
+        }
+
+        .header-icon.green {
+            background: #dcfce7;
+        }
+
+    .info-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        padding: 14px 0;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row > span {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .info-row strong {
+            text-align: right;
+            font-size: 14px;
+        }
+
+    .employee-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 0;
+    }
+
+    .big-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #e0e7ff;
+        color: #4338ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .employee-box h3 {
+        margin: 0 0 7px;
+        font-size: 18px;
+    }
+
+    .employee-box p {
+        margin: 4px 0;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .unassigned {
+        padding: 25px;
+        text-align: center;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+
+    .unassigned-icon {
+        font-size: 35px;
+        margin-bottom: 10px;
+    }
+
+    .unassigned strong {
+        display: block;
+        color: #4b5563;
+    }
+
+    .unassigned span {
+        display: block;
+        color: #9ca3af;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .description-box {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 18px;
+        min-height: 110px;
+    }
+
+        .description-box p {
+            margin: 0;
+            line-height: 1.7;
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+    .no-description {
+        color: #9ca3af;
+        text-align: center;
+        padding: 25px;
+    }
+
+    .priority,
+    .status {
+        display: inline-block;
+        padding: 6px 11px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .priority.urgent {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .priority.high {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .priority.normal {
+            background: #fef3c7;
+            color: #a16207;
+        }
+
+        .priority.low {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .priority.unknown {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .priority.critical {
+            background: #7f1d1d;
+            color: #fff;
+        }
+
+        .status.pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .status.progress {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status.completed {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status.cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .status.unknown {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+    .room-summary {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .room-number {
+        min-width: 90px;
+        height: 80px;
+        border-radius: 14px;
+        background: #eef2ff;
+        color: #4338ca;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-size: 15px;
+    }
+
+        .room-number strong {
+            font-size: 22px;
+        }
+
+    .room-status-text span {
+        color: #9ca3af;
+        font-size: 12px;
+    }
+
+    .room-status-text strong {
+        display: block;
+        margin-top: 5px;
+        font-size: 15px;
+    }
+
+    .room-status-text small {
+        display: block;
+        margin-top: 7px;
+        color: #9ca3af;
+    }
+
+    .detail-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+        .detail-actions form {
+            margin: 0;
+        }
+
+    .action-btn {
+        width: 100%;
+        height: 46px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        border: none;
+        transition: .15s ease;
+    }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .escalate-btn {
+        background: #fff1f2;
+        color: #be123c;
+    }
+
+        .escalate-btn:hover:not(:disabled) {
+            background: #ffe4e6;
+        }
+
+    .complete-btn {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+        .complete-btn:hover {
+            background: #bbf7d0;
+        }
+
+    .cancel-btn {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+        .cancel-btn:hover {
+            background: #e5e7eb;
+        }
+
+    @@media (max-width: 1100px) {
+        .quick-summary {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 800px) {
+        .details-page {
+            padding: 20px;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .top-bar {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .detail-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 550px) {
+        .quick-summary {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

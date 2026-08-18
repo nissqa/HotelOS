@@ -1,0 +1,1301 @@
+﻿@model HotelOS.Models.CommonAreasViewModel
+@{
+    ViewData["Title"] = "Ortak Alanlar";
+
+    var areas = Model?.Areas ?? new List<HotelOS.Models.CommonArea>();
+
+    var cleanCount = areas.Count(a => a.Status == "Temiz");
+    var cleaningCount = areas.Count(a => a.Status == "Temizlik Bekliyor");
+    var maintenanceCount = areas.Count(a => a.Status == "Bakım Gerekiyor");
+    var inactiveCount = areas.Count(a => !a.IsActive || a.Status == "Kullanım Dışı");
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Ortak Alanlar - HotelOS</title>
+
+    <link rel="stylesheet" href="~/css/commonareas.css" />
+
+</head>
+
+<body>
+
+    <div class="common-app">
+
+        <main class="main">
+
+
+            <header class="topbar">
+
+                <div class="page-heading">
+
+                    <div class="breadcrumb">
+                        HotelOS / Tesis & Hizmetler
+                    </div>
+
+                    <h1>Ortak Alanlar</h1>
+
+                    <p>
+                        Otelin ortak kullanım alanlarının temizlik ve bakım durumunu yönetin.
+                    </p>
+
+                </div>
+
+                <div class="topbar-actions">
+
+                    <a href="/BOI" class="dashboard-btn">
+                        ← Dashboard'a Dön
+                    </a>
+
+                    <div class="top-user">
+
+                        <div class="top-avatar">
+                            B
+                        </div>
+
+                        <div>
+                            <strong>BOİ Müdürü</strong>
+                            <small>Operasyon Müdürü</small>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+
+            <section class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <span class="stat-title">
+                            Temiz / Hazır
+                        </span>
+
+                        <div class="stat-icon green">
+                            ✓
+                        </div>
+
+                    </div>
+
+                    <div class="stat-number">
+                        @cleanCount
+                    </div>
+
+                    <div class="stat-description">
+                        Kullanıma hazır alan
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <span class="stat-title">
+                            Temizlik Bekliyor
+                        </span>
+
+                        <div class="stat-icon orange">
+                            🧹
+                        </div>
+
+                    </div>
+
+                    <div class="stat-number">
+                        @cleaningCount
+                    </div>
+
+                    <div class="stat-description">
+                        Temizlik bekleyen alan
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <span class="stat-title">
+                            Bakım Gerekiyor
+                        </span>
+
+                        <div class="stat-icon red">
+                            🔧
+                        </div>
+
+                    </div>
+
+                    <div class="stat-number">
+                        @maintenanceCount
+                    </div>
+
+                    <div class="stat-description">
+                        Açık bakım durumu
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-top">
+
+                        <span class="stat-title">
+                            Kullanım Dışı
+                        </span>
+
+                        <div class="stat-icon gray">
+                            🚫
+                        </div>
+
+                    </div>
+
+                    <div class="stat-number">
+                        @inactiveCount
+                    </div>
+
+                    <div class="stat-description">
+                        Aktif olmayan alan
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <section class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+
+                        <h2>Ortak Alanlar</h2>
+
+                        <p>
+                            Otelde bulunan ortak kullanım alanlarını görüntüleyin ve yönetin.
+                        </p>
+
+                    </div>
+
+                    <button type="button"
+                            class="primary-btn"
+                            onclick="openAddArea()">
+
+                        + Ortak Alan Ekle
+
+                    </button>
+
+                </div>
+
+
+
+                <div class="filters">
+
+                    <div class="search-box">
+
+                        <span>🔍</span>
+
+                        <input type="text"
+                               id="areaSearch"
+                               placeholder="Ortak alan ara..."
+                               oninput="filterAreas()" />
+
+                    </div>
+
+
+                    <select id="statusFilter"
+                            onchange="filterAreas()">
+
+                        <option value="all">
+                            Tüm Durumlar
+                        </option>
+
+                        <option value="Temiz">
+                            Temiz
+                        </option>
+
+                        <option value="Temizlik Bekliyor">
+                            Temizlik Bekliyor
+                        </option>
+
+                        <option value="Bakım Gerekiyor">
+                            Bakım Gerekiyor
+                        </option>
+
+                        <option value="Kullanım Dışı">
+                            Kullanım Dışı
+                        </option>
+
+                    </select>
+
+
+                    <select id="typeFilter"
+                            onchange="filterAreas()">
+
+                        <option value="all">
+                            Tüm Alan Türleri
+                        </option>
+
+                        <option value="Genel Alan">
+                            Genel Alan
+                        </option>
+
+                        <option value="Sosyal Alan">
+                            Sosyal Alan
+                        </option>
+
+                        <option value="Yeme-İçme">
+                            Yeme-İçme
+                        </option>
+
+                        <option value="Teknik Alan">
+                            Teknik Alan
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+
+                <div class="area-grid" id="areaGrid">
+
+                    @if (areas.Any())
+                    {
+
+                        foreach (var area in areas)
+                        {
+
+                            var statusClass = area.Status switch
+                            {
+                                "Temiz" => "clean",
+                                "Temizlik Bekliyor" => "waiting",
+                                "Bakım Gerekiyor" => "maintenance",
+                                "Kullanım Dışı" => "inactive",
+                                _ => "unknown"
+                            };
+
+                            var icon = area.Type switch
+                            {
+                                "Sosyal Alan" => "🏊",
+                                "Yeme-İçme" => "🍽️",
+                                "Teknik Alan" => "⚙️",
+                                _ => "🏢"
+                            };
+
+
+                            <div class="area-card"
+                                 data-name="@area.Name.ToLower()"
+                                 data-status="@area.Status"
+                                 data-type="@area.Type"
+                                 data-id="@area.Id">
+
+
+                               
+
+                                <div class="area-card-top">
+
+                                    <div class="area-icon">
+                                        @icon
+                                    </div>
+
+                                    <span class="status-badge @statusClass">
+                                        @area.Status
+                                    </span>
+
+                                </div>
+
+
+                                <div class="area-content">
+
+                                    <h3>
+                                        @area.Name
+                                    </h3>
+
+                                    <span class="area-type">
+                                        @area.Type
+                                    </span>
+
+                                    <p>
+                                        📍 @area.Location
+                                    </p>
+
+                                    @if (!string.IsNullOrWhiteSpace(area.Description))
+                                    {
+                                        <p class="area-description">
+                                            @area.Description
+                                        </p>
+                                    }
+
+                                </div>
+
+
+                              
+
+                                <div class="area-info">
+
+                                    <div>
+
+                                        <span>
+                                            Son temizlik
+                                        </span>
+
+                                        <strong>
+                                            @(area.LastCleaningDate?.ToString("dd.MM.yyyy HH:mm") ?? "-")
+                                        </strong>
+
+                                    </div>
+
+
+                                    <div>
+
+                                        <span>
+                                            Son bakım
+                                        </span>
+
+                                        <strong>
+                                            @(area.LastMaintenanceDate?.ToString("dd.MM.yyyy HH:mm") ?? "-")
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                            
+
+                                <div class="area-actions">
+
+                                    <button type="button"
+                                            class="detail-btn"
+                                            onclick="openEditArea(
+                                                    '@area.Id',
+                                                    '@area.Name',
+                                                    '@area.Type',
+                                                    '@area.Location',
+                                                    '@area.Status',
+                                                    '@area.Description'
+                                                )">
+
+                                        ✏️ Düzenle
+
+                                    </button>
+
+
+                                    <button type="button"
+                                            class="action-btn cleaning-btn"
+                                            onclick="openCleaning(
+                                                    '@area.Id',
+                                                    '@area.Name'
+                                                )">
+
+                                        🧹 Temizlik
+
+                                    </button>
+
+
+                                    <button type="button"
+                                            class="action-btn maintenance-btn"
+                                            onclick="openMaintenance(
+                                                    '@area.Id',
+                                                    '@area.Name'
+                                                )">
+
+                                        🔧 Bakım
+
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        }
+
+                    }
+                    else
+                    {
+
+                        <div class="empty-state">
+
+                            <div class="empty-icon">
+                                🏢
+                            </div>
+
+                            <h3>
+                                Henüz ortak alan bulunmuyor
+                            </h3>
+
+                            <p>
+                                İlk ortak alanı ekleyerek başlayabilirsiniz.
+                            </p>
+
+                            <button type="button"
+                                    class="primary-btn"
+                                    onclick="openAddArea()">
+
+                                + Ortak Alan Ekle
+
+                            </button>
+
+                        </div>
+
+                    }
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+
+    <div id="addAreaModal"
+         class="modal-overlay"
+         onclick="closeModalOutside(event)">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>Yeni Ortak Alan</h2>
+
+                    <p>
+                        Otele yeni bir ortak kullanım alanı ekleyin.
+                    </p>
+
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeAddArea()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <form id="addAreaForm"
+                  onsubmit="addArea(event)">
+
+                <div class="form-group">
+
+                    <label>Alan Adı</label>
+
+                    <input type="text"
+                           id="newAreaName"
+                           placeholder="Örn. Ana Restoran"
+                           required />
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Alan Türü</label>
+
+                    <select id="newAreaType"
+                            required>
+
+                        <option value="">
+                            Alan türü seçin
+                        </option>
+
+                        <option value="Genel Alan">
+                            Genel Alan
+                        </option>
+
+                        <option value="Sosyal Alan">
+                            Sosyal Alan
+                        </option>
+
+                        <option value="Yeme-İçme">
+                            Yeme-İçme
+                        </option>
+
+                        <option value="Teknik Alan">
+                            Teknik Alan
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Konum</label>
+
+                    <input type="text"
+                           id="newAreaLocation"
+                           placeholder="Örn. Zemin Kat"
+                           required />
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Açıklama</label>
+
+                    <textarea id="newAreaDescription"
+                              rows="3"
+                              placeholder="Alan hakkında kısa açıklama..."></textarea>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            class="cancel-btn"
+                            onclick="closeAddArea()">
+
+                        Vazgeç
+
+                    </button>
+
+                    <button type="submit"
+                            class="primary-btn">
+
+                        + Alanı Ekle
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="editAreaModal"
+         class="modal-overlay"
+         onclick="closeEditOutside(event)">
+
+        <div class="modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>Ortak Alanı Düzenle</h2>
+
+                    <p>
+                        Alan bilgilerini ve kullanım durumunu düzenleyin.
+                    </p>
+
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeEditArea()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <form id="editAreaForm"
+                  onsubmit="saveEditArea(event)">
+
+                <input type="hidden"
+                       id="editAreaId" />
+
+
+                <div class="form-group">
+
+                    <label>Alan Adı</label>
+
+                    <input type="text"
+                           id="editAreaName"
+                           required />
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Alan Türü</label>
+
+                    <select id="editAreaType"
+                            required>
+
+                        <option value="Genel Alan">
+                            Genel Alan
+                        </option>
+
+                        <option value="Sosyal Alan">
+                            Sosyal Alan
+                        </option>
+
+                        <option value="Yeme-İçme">
+                            Yeme-İçme
+                        </option>
+
+                        <option value="Teknik Alan">
+                            Teknik Alan
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Konum</label>
+
+                    <input type="text"
+                           id="editAreaLocation"
+                           required />
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Kullanım Durumu</label>
+
+                    <select id="editAreaStatus">
+
+                        <option value="Temiz">
+                            Temiz / Kullanıma Açık
+                        </option>
+
+                        <option value="Kullanım Dışı">
+                            Kullanım Dışı
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Açıklama</label>
+
+                    <textarea id="editAreaDescription"
+                              rows="3"></textarea>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            class="cancel-btn"
+                            onclick="closeEditArea()">
+
+                        Vazgeç
+
+                    </button>
+
+                    <button type="submit"
+                            class="primary-btn">
+
+                        Değişiklikleri Kaydet
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="cleaningModal"
+         class="modal-overlay"
+         onclick="closeCleaningOutside(event)">
+
+        <div class="modal task-modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>🧹 Temizlik Görevi</h2>
+
+                    <p>
+                        Temizlik personelini seçin ve görevi oluşturun.
+                    </p>
+
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeCleaning()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <form id="cleaningForm"
+                  onsubmit="saveCleaning(event)">
+
+                <input type="hidden"
+                       id="cleaningAreaId" />
+
+
+                <div class="selected-area">
+
+                    <span>Ortak Alan</span>
+
+                    <strong id="cleaningAreaName">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Temizlik Görevlisi
+                    </label>
+
+                    <select id="cleaningEmployee" required>
+
+                        
+
+                        @foreach (var employee in Model.CleaningEmployees)
+                        {
+                            <option value="@employee.Id">
+                                @employee.FirstName @employee.LastName
+                            </option>
+                        }
+
+                    </select>
+
+                    <small>
+                        Temizlik personeli seçilmelidir.
+                    </small>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Görev Notu
+                    </label>
+
+                    <textarea id="cleaningNote"
+                              rows="3"
+                              placeholder="Örn. Zemin ve masalar temizlenecek..."></textarea>
+
+                </div>
+
+
+                <div class="task-info warning">
+
+                    <span>Durum</span>
+
+                    <strong>
+                        Temizlik Bekliyor
+                    </strong>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            class="cancel-btn"
+                            onclick="closeCleaning()">
+
+                        Vazgeç
+
+                    </button>
+
+                    <button type="submit"
+                            class="primary-btn">
+
+                        🧹 Görevi Oluştur
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="maintenanceModal"
+         class="modal-overlay"
+         onclick="closeMaintenanceOutside(event)">
+
+        <div class="modal task-modal">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>🔧 Bakım Görevi</h2>
+
+                    <p>
+                        Bakım personelini seçin ve bakım görevi oluşturun.
+                    </p>
+
+                </div>
+
+                <button type="button"
+                        class="modal-close"
+                        onclick="closeMaintenance()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <form id="maintenanceForm"
+                  onsubmit="saveMaintenance(event)">
+
+                <input type="hidden"
+                       id="maintenanceAreaId" />
+
+
+                <div class="selected-area">
+
+                    <span>Ortak Alan</span>
+
+                    <strong id="maintenanceAreaName">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Bakım Görevlisi
+                    </label>
+
+                    <select id="maintenanceEmployee" required>
+
+                        
+
+                        @foreach (var employee in Model.MaintenanceEmployees)
+                        {
+                            <option value="@employee.Id">
+                                @employee.FirstName @employee.LastName
+                            </option>
+                        }
+
+                    </select>
+
+                    <small>
+                        Bakım personeli seçilmelidir.
+                    </small>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>
+                        Bakım Açıklaması
+                    </label>
+
+                    <textarea id="maintenanceNote"
+                              rows="3"
+                              placeholder="Örn. Klima kontrolü yapılacak..."></textarea>
+
+                </div>
+
+
+                <div class="task-info danger">
+
+                    <span>Durum</span>
+
+                    <strong>
+                        Bakım Gerekiyor
+                    </strong>
+
+                </div>
+
+
+                <div class="modal-actions">
+
+                    <button type="button"
+                            class="cancel-btn"
+                            onclick="closeMaintenance()">
+
+                        Vazgeç
+
+                    </button>
+
+                    <button type="submit"
+                            class="primary-btn">
+
+                        🔧 Görevi Oluştur
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+
+        function filterAreas() {
+
+            const search =
+                document.getElementById("areaSearch")
+                    .value
+                    .toLowerCase()
+                    .trim();
+
+            const status =
+                document.getElementById("statusFilter").value;
+
+            const type =
+                document.getElementById("typeFilter").value;
+
+            const cards =
+                document.querySelectorAll(".area-card");
+
+
+            cards.forEach(card => {
+
+                const name =
+                    (card.dataset.name || "").toLowerCase();
+
+                const cardStatus =
+                    card.dataset.status || "";
+
+                const cardType =
+                    card.dataset.type || "";
+
+
+                const searchMatch =
+                    name.includes(search);
+
+                const statusMatch =
+                    status === "all" ||
+                    cardStatus === status;
+
+                const typeMatch =
+                    type === "all" ||
+                    cardType === type;
+
+
+                card.style.display =
+                    searchMatch &&
+                    statusMatch &&
+                    typeMatch
+                        ? ""
+                        : "none";
+
+            });
+
+        }
+
+
+
+        function openAddArea() {
+
+            document
+                .getElementById("addAreaModal")
+                .classList.add("show");
+
+            document
+                .getElementById("newAreaName")
+                .focus();
+
+        }
+
+
+        function closeAddArea() {
+
+            document
+                .getElementById("addAreaModal")
+                .classList.remove("show");
+
+        }
+
+
+        function closeModalOutside(event) {
+
+            if (event.target.id === "addAreaModal") {
+
+                closeAddArea();
+
+            }
+
+        }
+
+
+        function addArea(event) {
+
+            event.preventDefault();
+
+            const name =
+                document.getElementById("newAreaName").value.trim();
+
+            const type =
+                document.getElementById("newAreaType").value;
+
+            const location =
+                document.getElementById("newAreaLocation").value.trim();
+
+
+            if (!name || !type || !location) {
+
+                alert("Lütfen gerekli alanları doldurun.");
+
+                return;
+
+            }
+
+
+            
+
+            closeAddArea();
+
+        }
+
+
+
+        function openEditArea(
+            id,
+            name,
+            type,
+            location,
+            status,
+            description
+        ) {
+
+            document.getElementById("editAreaId").value = id;
+            document.getElementById("editAreaName").value = name;
+            document.getElementById("editAreaType").value = type;
+            document.getElementById("editAreaLocation").value = location;
+            document.getElementById("editAreaStatus").value =
+                status === "Kullanım Dışı"
+                    ? "Kullanım Dışı"
+                    : "Temiz";
+
+            document.getElementById("editAreaDescription").value =
+                description || "";
+
+
+            document
+                .getElementById("editAreaModal")
+                .classList.add("show");
+
+        }
+
+
+        function closeEditArea() {
+
+            document
+                .getElementById("editAreaModal")
+                .classList.remove("show");
+
+        }
+
+
+        function closeEditOutside(event) {
+
+            if (event.target.id === "editAreaModal") {
+
+                closeEditArea();
+
+            }
+
+        }
+
+
+        function saveEditArea(event) {
+
+            event.preventDefault();
+
+          
+
+            closeEditArea();
+
+        }
+
+
+
+        function openCleaning(id, name) {
+
+            document.getElementById("cleaningAreaId").value = id;
+
+            document.getElementById("cleaningAreaName").textContent =
+                name;
+
+
+            document
+                .getElementById("cleaningModal")
+                .classList.add("show");
+
+        }
+
+
+        function closeCleaning() {
+
+            document
+                .getElementById("cleaningModal")
+                .classList.remove("show");
+
+        }
+
+
+        function closeCleaningOutside(event) {
+
+            if (event.target.id === "cleaningModal") {
+
+                closeCleaning();
+
+            }
+
+        }
+
+
+        function saveCleaning(event) {
+
+            event.preventDefault();
+
+            const employee =
+                document.getElementById("cleaningEmployee").value;
+
+
+            if (!employee) {
+
+                alert("Lütfen temizlik görevlisi seçin.");
+
+                return;
+
+            }
+
+
+            closeCleaning();
+
+        }
+
+
+
+        function openMaintenance(id, name) {
+
+            document.getElementById("maintenanceAreaId").value = id;
+
+            document.getElementById("maintenanceAreaName").textContent =
+                name;
+
+
+            document
+                .getElementById("maintenanceModal")
+                .classList.add("show");
+
+        }
+
+
+        function closeMaintenance() {
+
+            document
+                .getElementById("maintenanceModal")
+                .classList.remove("show");
+
+        }
+
+
+        function closeMaintenanceOutside(event) {
+
+            if (event.target.id === "maintenanceModal") {
+
+                closeMaintenance();
+
+            }
+
+        }
+
+
+        function saveMaintenance(event) {
+
+            event.preventDefault();
+
+            const employee =
+                document.getElementById("maintenanceEmployee").value;
+
+
+            if (!employee) {
+
+                alert("Lütfen bakım görevlisi seçin.");
+
+                return;
+
+            }
+
+
+            closeMaintenance();
+
+        }
+
+
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (event.key !== "Escape") {
+                    return;
+                }
+
+                closeAddArea();
+                closeEditArea();
+                closeCleaning();
+                closeMaintenance();
+
+            }
+        );
+
+    </script>
+
+</body>
+</html>

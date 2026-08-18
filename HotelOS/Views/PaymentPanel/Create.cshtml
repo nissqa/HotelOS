@@ -1,0 +1,397 @@
+﻿@model List<HotelOS.Models.Reservation>
+
+@{
+    ViewData["Title"] = "Ödeme Al";
+}
+
+<div class="payment-create-page">
+
+    <div class="page-header">
+        <div>
+            <h1>💳 Ödeme Al</h1>
+            <p>Aktif konaklayan müşterilerden ödeme alın.</p>
+        </div>
+
+        <a asp-controller="PaymentPanel"
+           asp-action="Index"
+           class="back-btn">
+            ← Ödemelere Dön
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert error">
+            ⚠️ @TempData["Error"]
+        </div>
+    }
+
+    <div class="form-card">
+
+        <div class="form-title">
+            <div class="icon">💰</div>
+
+            <div>
+                <h2>Ödeme Bilgileri</h2>
+                <p>Ödeme yapılacak konaklamayı seçiniz.</p>
+            </div>
+        </div>
+
+        <form asp-controller="PaymentPanel"
+              asp-action="Create"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+
+                <label>Konaklayan Müşteri</label>
+
+                <select name="reservationId"
+                        id="reservationId"
+                        required>
+
+                    <option value="">
+                        Müşteri / oda seçiniz
+                    </option>
+
+                    @foreach (var reservation in Model)
+                    {
+                        var customerName =
+                        reservation.Customer != null
+                        ? $"{reservation.Customer.FirstName} {reservation.Customer.LastName}"
+                        : "Müşteri bilinmiyor";
+
+                        var roomNumber =
+                        reservation.Room?.RoomNumber ?? "-";
+
+                        <option value="@reservation.Id">
+                            @customerName - Oda @roomNumber
+                        </option>
+                    }
+
+                </select>
+
+                @if (!Model.Any())
+                {
+                    <div class="warning">
+                        ℹ️ Şu anda aktif konaklayan müşteri bulunmuyor.
+                    </div>
+                }
+
+            </div>
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Ödeme Tutarı</label>
+
+                    <div class="amount-input">
+
+                        <input type="number"
+                               name="amount"
+                               step="0.01"
+                               min="0.01"
+                               placeholder="0,00"
+                               required />
+
+                        <span>₺</span>
+
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label>Ödeme Yöntemi</label>
+
+                    <select name="paymentMethod" required>
+
+                        <option value="">
+                            Ödeme yöntemi seçiniz
+                        </option>
+
+                        <option value="Nakit">
+                            💵 Nakit
+                        </option>
+
+                        <option value="Kart">
+                            💳 Kredi / Banka Kartı
+                        </option>
+
+                        <option value="Havale">
+                            🏦 Havale / EFT
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="info-box">
+                <strong>ℹ️ Bilgi</strong>
+                <span>
+                    Ödeme tamamlandığında işlem otomatik olarak
+                    "Ödendi" durumunda kaydedilecektir.
+                </span>
+            </div>
+
+            <div class="form-actions">
+
+                <a asp-controller="PaymentPanel"
+                   asp-action="Index"
+                   class="cancel-btn">
+                    Vazgeç
+                </a>
+
+                <button type="submit"
+                        class="save-btn"
+                        @(Model.Any() ? "" : "disabled")>
+                    💳 Ödemeyi Tamamla
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: #f5f7fb;
+    }
+
+    .payment-create-page {
+        padding: 30px;
+        min-height: 100vh;
+        color: #1f2937;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+            color: #172554;
+        }
+
+        .page-header p {
+            margin-top: 7px;
+            color: #6b7280;
+        }
+
+    .back-btn {
+        text-decoration: none;
+        background: white;
+        color: #374151;
+        padding: 11px 16px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+    }
+
+        .back-btn:hover {
+            background: #f8fafc;
+        }
+
+    .form-card {
+        max-width: 850px;
+        background: white;
+        border-radius: 18px;
+        padding: 30px;
+        box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+
+    .form-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding-bottom: 22px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        background: #eef2ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+    .form-title h2 {
+        margin: 0;
+        color: #172554;
+        font-size: 20px;
+    }
+
+    .form-title p {
+        margin: 5px 0 0;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .form-group {
+        margin-bottom: 22px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    select,
+    input {
+        width: 100%;
+        height: 48px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        padding: 0 14px;
+        font-size: 14px;
+        background: white;
+        outline: none;
+    }
+
+        select:focus,
+        input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.08);
+        }
+
+    .amount-input {
+        position: relative;
+    }
+
+        .amount-input input {
+            padding-right: 45px;
+        }
+
+        .amount-input span {
+            position: absolute;
+            right: 15px;
+            top: 14px;
+            color: #6b7280;
+            font-weight: 600;
+        }
+
+    .warning {
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 9px;
+        background: #fff7ed;
+        color: #c2410c;
+        font-size: 13px;
+    }
+
+    .info-box {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 14px;
+        margin-top: 5px;
+        color: #1e40af;
+        font-size: 13px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .cancel-btn,
+    .save-btn {
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+    }
+
+    .cancel-btn {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .save-btn {
+        background: #2563eb;
+        color: white;
+    }
+
+        .save-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .save-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+    .alert {
+        max-width: 850px;
+        padding: 14px 18px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+        .alert.error {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+    @@media (max-width: 700px) {
+
+        .payment-create-page {
+            padding: 20px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .form-card {
+            padding: 20px;
+        }
+    }
+
+</style>
